@@ -21,7 +21,6 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
-import br.unicamp.cst.representation.idea.Idea;
 import sensory.SensorBufferCodelet;
 import codelets.learner.AcommodationCodelet;
 import codelets.learner.ActionExecCodelet;
@@ -38,19 +37,12 @@ import codelets.learner.RewardComputerCodelet;
 import codelets.learner.LearnerCodelet;
 import codelets.learner.QLearningL;
 import codelets.sensors.CFM;
-/*import codelets.sensors.Sensor_ColorRed;
-import codelets.sensors.Sensor_ColorGreen;
-import codelets.sensors.Sensor_ColorBlue;*/
 import codelets.sensors.BU_FM_Color;
-/*import codelets.sensors.BU_FM_ColorGreen;
-import codelets.sensors.BU_FM_ColorBlue;*/
 import codelets.sensors.BU_FM_Depth;
 import codelets.sensors.TD_FM_Color;
 import codelets.sensors.TD_FM_Depth;
 import codelets.motivation.CuriosityDrive_MotivationCodelet;
-import codelets.motivation.DriverArray;
-import codelets.motivation.SurvivalDrive_MotivationCodelet;
-import codelets.sensors.Sensor_Battery;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,7 +77,7 @@ private long seed;
         
         // Motivation
         // MemoryObject curiosity_motivationMO = null, curiosity_activationMO  = null, hunger_motivationMO  = null;
-        DriverArray motivationMC = new DriverArray("MOTIVATION");
+        MemoryContainer motivationMC = new MemoryContainer("MOTIVATION");
 
         //Motor - Neck
         MemoryObject motorActionMO;
@@ -101,9 +93,6 @@ private long seed;
         
         //Sensors
         
-        // Battery
-        List battery_data = Collections.synchronizedList(new ArrayList<Float>(1));
-        MemoryObject battery_read = createMemoryObject("BATTERY", battery_data);
         
         //Vision Sensor
         List vision_data = Collections.synchronizedList(new ArrayList<Float>(Visiondimension));
@@ -113,9 +102,6 @@ private long seed;
         List depth_data = Collections.synchronizedList(new ArrayList<Float>(Vision_image_dimension));
         MemoryObject depth_read = createMemoryObject("DEPTH", depth_data);
         
-        //Sensor Buffers
-        List battery_buffer_list = Collections.synchronizedList(new ArrayList<Memory>(Buffersize));
-        MemoryObject battery_bufferMO = createMemoryObject("BATTERY_BUFFER",battery_buffer_list);
         
 
         //Vision buffer
@@ -216,41 +202,17 @@ private long seed;
         List qtableList = Collections.synchronizedList(new ArrayList<QLearningL>());
         MemoryObject qtableMO = createMemoryObject("QTABLE", qtableList);
         
-        List qtableCList = Collections.synchronizedList(new ArrayList<QLearningL>());
-        MemoryObject qtableCMO = createMemoryObject("QTABLEC", qtableCList);
-        
-        List qtableSList = Collections.synchronizedList(new ArrayList<QLearningL>());
-        MemoryObject qtableSMO = createMemoryObject("QTABLES", qtableSList);
         
         //REWARDS
         
         List rewardsList = Collections.synchronizedList(new ArrayList<Integer>());
         MemoryObject rewardsMO = createMemoryObject("REWARDS", rewardsList);
-        
-        List cur_rewardsList = Collections.synchronizedList(new ArrayList<Integer>());
-        MemoryObject cur_rewardsMO = createMemoryObject("CUR_REWARDS", cur_rewardsList);
-        
-        List sur_rewardsList = Collections.synchronizedList(new ArrayList<Integer>());
-        MemoryObject sur_rewardsMO = createMemoryObject("SUR_REWARDS", sur_rewardsList);
-        
+
         // PROCEDURAL MEMORY
         //List proceduralMemory = Collections.synchronizedList(new ArrayList<HashMap<Observation, ArrayList<Integer>>>());
         MemoryContainer proceduralMO = createMemoryContainer("PROCEDURAL");
         
-        if(saverCodelet){
-        // SAVER MOs
-        //stringOutput.add("rewards.txt");
-        stringOutputreS = "time_graph Exp_number Action_num Battery Curiosity_lv Red Green Blue reward";                
-        MemoryObject rewardS_saverMO = createMemoryObject("REWARDSS_STRING_OUTPUT", stringOutputreS);
-
-        stringOutputreC = "time_graph Exp_number Action_num Battery Curiosity_lv Red Green Blue reward";                
-        MemoryObject rewardC_saverMO = createMemoryObject("REWARDSC_STRING_OUTPUT", stringOutputreC);
         
-        // stringOutput.clear();
-        stringOutputac = "time_graph Exp_number Action_num Battery Curiosity_lv Red Green Blue action";
-        MemoryObject action_saverMO = createMemoryObject("ACTION_STRING_OUTPUT", stringOutputac);
-        //stringOutput.add("actions.txt");
-        }
         
         // Desired features
         
@@ -279,11 +241,7 @@ private long seed;
         visions.addOutput(vision_read);
         insertCodelet(visions);
 
-                //Battery Sensor
-        Codelet battery_c = new Sensor_Battery(oc.battery);
-        battery_c.addOutput(battery_read);
-        insertCodelet(battery_c);
-
+        
         //Depth Sensor
         Codelet depths = new Sensor_Depth(oc.depth, oc.vision);
         //visions.addInput(stage_fmMO);
@@ -297,11 +255,6 @@ private long seed;
         vision_buffer.addOutput(vision_bufferMO);
         insertCodelet(vision_buffer);
 
-        //Battery data
-        Codelet battery_buffer = new SensorBufferCodelet("BATTERY", "BATTERY_BUFFER", Buffersize);
-        battery_buffer.addInput(battery_read);
-        battery_buffer.addOutput(battery_bufferMO);
-        insertCodelet(battery_buffer);
         
         //Depth data
         Codelet depth_buffer = new SensorBufferCodelet("DEPTH", "DEPTH_BUFFER", Buffersize);
@@ -313,8 +266,7 @@ private long seed;
         ArrayList<String> sensbuff_names_vision = new ArrayList<>();
         sensbuff_names_vision.add("VISION_BUFFER");
         sensbuff_names_vision.add("DEPTH_BUFFER");
-        sensbuff_names_vision.add("BATTERY_BUFFER");
-       
+        
         
 
         //Feature Maps bottom-up
@@ -394,59 +346,6 @@ private long seed;
         dec_mak_cod.addOutput(attMapMO);
         insertCodelet(dec_mak_cod);
         
-        if(num_tables == 2){
-            //CURIOSITY REWARD CODELET
-            Codelet cur_reward_cod = new RewardComputerCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, "CURIOSITY", "REWARDSC_STRING_OUTPUT", num_tables);
-            cur_reward_cod.addInput(salMapMO);
-            cur_reward_cod.addInput(winnersMO);        
-            if(motivation.equals("drives")){
-                cur_reward_cod.addInput(motivationMC);
-              }
-            cur_reward_cod.addInput(battery_bufferMO);
-            cur_reward_cod.addInput(actionsMO);
-            cur_reward_cod.addOutput(cur_rewardsMO);       
-            insertCodelet(cur_reward_cod);
-
-            //SURVIVAL REWARD CODELET
-            Codelet sur_reward_cod = new RewardComputerCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, "SURVIVAL", "REWARDSS_STRING_OUTPUT", num_tables);
-            sur_reward_cod.addInput(salMapMO);
-            sur_reward_cod.addInput(winnersMO);        
-            if(motivation.equals("drives")){
-                sur_reward_cod.addInput(motivationMC);
-              }
-
-            sur_reward_cod.addInput(battery_bufferMO);
-            sur_reward_cod.addInput(actionsMO);
-            sur_reward_cod.addOutput(sur_rewardsMO);        
-            insertCodelet(sur_reward_cod);
-
-            //LEARNER CODELET
-            Codelet sur_learner_cod = new LearnerCodelet(oc.vrep, oc.clientID, oc, Buffersize, mode,
-                    motivation, "SURVIVAL", "QTABLES", num_tables,this.seed );
-            sur_learner_cod.addInput(salMapMO);
-            sur_learner_cod.addInput(sur_rewardsMO);
-            sur_learner_cod.addInput(battery_bufferMO);
-            sur_learner_cod.addInput(actionsMO);
-            sur_learner_cod.addInput(statesMO);
-            if(motivation.equals("drives")){
-                sur_learner_cod.addInput(motivationMC);
-              }
-            sur_learner_cod.addOutput(qtableSMO);
-            insertCodelet(sur_learner_cod);
-
-            Codelet cur_learner_cod = new LearnerCodelet(oc.vrep, oc.clientID, oc, Buffersize, mode, 
-                    motivation, "CURIOSITY", "QTABLEC", num_tables,this.seed );
-            cur_learner_cod.addInput(salMapMO);
-            cur_learner_cod.addInput(cur_rewardsMO);
-            cur_learner_cod.addInput(actionsMO);
-            cur_learner_cod.addInput(statesMO);
-            if(motivation.equals("drives")){
-                cur_learner_cod.addInput(motivationMC);
-              }
-            cur_learner_cod.addOutput(qtableCMO);
-            insertCodelet(cur_learner_cod);
-        
-        } else if(num_tables == 1){
             //CURIOSITY REWARD CODELET
             Codelet reward_cod = new RewardComputerCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, "", "REWARDS_STRING_OUTPUT", num_tables);
             reward_cod.addInput(salMapMO);
@@ -455,7 +354,6 @@ private long seed;
                 reward_cod.addInput(motivationMC);
               }
 
-            reward_cod.addInput(battery_bufferMO);
             reward_cod.addInput(actionsMO);
             reward_cod.addOutput(rewardsMO);      
             insertCodelet(reward_cod);
@@ -474,21 +372,13 @@ private long seed;
             insertCodelet(learner_cod);
             
             
-        }
+        
         
         Codelet decision_cod = new DecisionCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables);
          decision_cod.addInput(salMapMO);
         if(motivation.equals("drives")) decision_cod.addInput(motivationMC);
-        if(num_tables == 2){
-            decision_cod.addInput(qtableSMO);
-            decision_cod.addInput(qtableCMO);
-            decision_cod.addInput(cur_rewardsMO);
-            decision_cod.addInput(sur_rewardsMO);
-        }
-        else if(num_tables == 1){
-            decision_cod.addInput(qtableMO);
-            decision_cod.addInput(rewardsMO);
-        }
+        decision_cod.addInput(qtableMO);
+        decision_cod.addInput(rewardsMO);
         decision_cod.addOutput(actionsMO);
         decision_cod.addOutput(statesMO);
         insertCodelet(decision_cod);
@@ -497,7 +387,6 @@ private long seed;
          action_exec_cod.addInput(salMapMO);
          action_exec_cod.addInput(winnersMO);
          action_exec_cod.addInput(vision_color_fmMO);
-         action_exec_cod.addInput(battery_bufferMO);
          action_exec_cod.addInput(depth_fmMO);
          action_exec_cod.addInput(actionsMO);
         if(motivation.equals("drives")) action_exec_cod.addInput(motivationMC);         
@@ -511,12 +400,7 @@ private long seed;
         Codelet assimilation_cod = new AssimilationCodelet(oc, motivation, num_tables);
         assimilation_cod.addInput(actionsMO);
         assimilation_cod.addInput(statesMO);
-        if(num_tables == 2){
-            assimilation_cod.addInput(cur_rewardsMO);
-            assimilation_cod.addInput(sur_rewardsMO);
-        } else if(num_tables == 1){
-            assimilation_cod.addInput(rewardsMO);
-        }
+        assimilation_cod.addInput(rewardsMO);
         if(motivation.equals("drives")){
             assimilation_cod.addInput(motivationMC);
         }
@@ -527,12 +411,8 @@ private long seed;
         Codelet acommodation_cod = new AcommodationCodelet(oc, motivation, num_tables);
         acommodation_cod.addInput(actionsMO);
         acommodation_cod.addInput(statesMO);
-        if(num_tables == 2){
-            acommodation_cod.addInput(cur_rewardsMO);
-            acommodation_cod.addInput(sur_rewardsMO);
-        } else if(num_tables == 1){
-            acommodation_cod.addInput(rewardsMO);
-        }
+        acommodation_cod.addInput(rewardsMO);
+        
         if(motivation.equals("drives")){
             acommodation_cod.addInput(motivationMC);
         }
@@ -544,31 +424,14 @@ private long seed;
             Codelet curiosity_motivation_cod = new CuriosityDrive_MotivationCodelet("Curiosity_Motivation", 0.0, 1.0, 0.0, oc,num_tables);
             curiosity_motivation_cod.addInput(actionsMO);
             curiosity_motivation_cod.addInput(statesMO);
-            curiosity_motivation_cod.addInput(cur_rewardsMO);
             curiosity_motivation_cod.addInput(proceduralMO);
             curiosity_motivation_cod.addOutput(motivationMC);
             insertCodelet(curiosity_motivation_cod);
 
-            Codelet hunger_motivation_cod = new SurvivalDrive_MotivationCodelet("Hunger_Motivation", 0.0, 1.0, 0.0, oc,num_tables);
-            hunger_motivation_cod.addInput(battery_bufferMO);
-            hunger_motivation_cod.addOutput(motivationMC);
-            insertCodelet(hunger_motivation_cod);
+
         }
         
-        // SAVER CODELETS
-/*        
-        Codelet action_saver = new saverCodelet(50, "actions.txt");
-        action_saver.addInput(action_saverMO);
-        insertCodelet(action_saver);
-        
-        Codelet reward_saverS = new saverCodelet(10, "rewardsS.txt");
-        reward_saverS.addInput(rewardS_saverMO);
-        insertCodelet(reward_saverS);
-        
-        Codelet reward_saverC = new saverCodelet(10, "rewardsC.txt");
-        reward_saverC.addInput(rewardC_saverMO);
-        insertCodelet(reward_saverC);
-*/
+
         ///////////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////
         

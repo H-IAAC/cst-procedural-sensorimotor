@@ -24,7 +24,7 @@ import java.io.IOException;
  * 
  * @author L. L. Rossi (leolellisr)
  */
-public class CST_CSR_RL {
+public class CST_procedural_sensorimotor {
 
     /**
      * @param args the command line arguments

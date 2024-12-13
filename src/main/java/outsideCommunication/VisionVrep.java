@@ -227,12 +227,10 @@ public class VisionVrep implements SensorI{
         else m_act = lastLinei.get(6)>this.getMaxActions() && lastLinei.get(7)>this.getMaxActions();
 //	printToFile(position.getArray()[2], "positions.txt");
         //if(debug) System.out.println("Marta on exp "+this.getEpoch()+" with z = "+position.getArray()[2]);        
-        if (this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act) || 
-                (lastLinei.get(4)>1 && (lastLinei.get(5)==0 || lastLinei.get(5)<0))) {
+        if (this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act)) {
             
             if(mlf){
              MLflowLogger.logMetric(runId, "Total_Actions", lastLinei.get(4), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "Battery", lastLinei.get(5), lastLinei.get(1));
             MLflowLogger.logMetric(runId, "ActionsC", lastLinei.get(6), lastLinei.get(1));
             MLflowLogger.logMetric(runId, "ActionsS", lastLinei.get(7), lastLinei.get(1));
             MLflowLogger.logMetric(runId, "GlobalRewardS", lastLinef.get(0), lastLinei.get(1));
@@ -260,7 +258,7 @@ public class VisionVrep implements SensorI{
 
             }
             System.out.println("Marta crashed on exp "+this.getEpoch()+" with z = "+position.getArray()[2]+
-                    " and battery "+lastLinei.get(5)+" Act:"+lastLinei.get(4));
+                    " Act:"+lastLinei.get(4));
                             
             printToFile("rewards.txt",true);
             printToFile("nrewards.txt",false);
@@ -365,8 +363,7 @@ public class VisionVrep implements SensorI{
         else m_act = lastLinei.get(6)>this.getMaxActions() && lastLinei.get(7)>this.getMaxActions();
 //	printToFile(position.getArray()[2], "positions.txt");
         //if(debug) System.out.println("Marta on exp "+this.getEpoch()+" with z = "+position.getArray()[2]);
-        return this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act) || 
-                (lastLinei.get(4)>1 && (lastLinei.get(5)==0 || lastLinei.get(5)<0));
+        return this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act);
     }
     
     @Override
@@ -613,7 +610,7 @@ public class VisionVrep implements SensorI{
             {
                 String s = " QTables:"+lastLinei.get(0)+
                         " Exp:"+lastLinei.get(1)+" exp_c:"+lastLinei.get(2)+" exp_s:"+lastLinei.get(3)+
-                        " Nact:"+lastLinei.get(4)+ " Battery:"+lastLinei.get(5)+
+                        " Nact:"+lastLinei.get(4)+ 
                         " Ri:"+lastLinef.get(5)+" SurV:"+lastLinef.get(1)+" dSurV:"+lastLinef.get(2)+
                         " CurV:"+lastLinef.get(3)+" dCurV:"+lastLinef.get(4)+
                         " G_Reward S:"+lastLinef.get(0)+" Ri S:"+lastLinef.get(5)+
@@ -624,7 +621,7 @@ public class VisionVrep implements SensorI{
                 if(debugp) System.out.println(s);
                 s = " QTables:"+lastLinei.get(0)+
                         " Exp:"+lastLinei.get(1)+" exp_c:"+lastLinei.get(2)+" exp_s:"+lastLinei.get(3)+
-                        " Nact:"+lastLinei.get(4)+ " Battery:"+lastLinei.get(5)+
+                        " Nact:"+lastLinei.get(4)+ 
                         " Ri:"+lastLinef.get(5)+" SurV:"+lastLinef.get(1)+" dSurV:"+lastLinef.get(2)+
                         " CurV:"+lastLinef.get(3)+" dCurV:"+lastLinef.get(4)+
                         "\n G_Reward S:"+lastLinef.get(0)+" Ri S:"+lastLinef.get(5)+

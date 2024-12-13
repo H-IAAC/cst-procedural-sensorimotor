@@ -39,7 +39,7 @@ public class OutsideCommunication {
 	public IntW marta_handle;
 	public MotorI NeckYaw_m, HeadPitch_m;       
 	public SensorI vision;
-        public VirtualBattery battery;
+        //public VirtualBattery battery;
         public SensorI depth;
 
 	public ArrayList<SensorI> vision_orientations;
@@ -128,7 +128,7 @@ public class OutsideCommunication {
 		
 
 		vision = new VisionVrep(vrep, clientID, vision_handles, max_epochs,n_tables);
-                battery = new VirtualBattery(this, this.mode, random);
+                //battery = new VirtualBattery(this, this.mode, random);
                 System.out.println("hdept clientID "+clientID+"vision_handles "+vision_handles.getValue());
                 depth = new DepthVrep(vrep, clientID, vision_handles, vision.getStage(), vision);    
 		try {
@@ -210,7 +210,7 @@ public class OutsideCommunication {
             }
         }
         
-         public void reset_battery(){
+         /*public void reset_battery(){
              int battery_i; 
              if("learning".equals(mode)){
                  int bt = random.nextInt(71) + 30;
@@ -218,5 +218,5 @@ public class OutsideCommunication {
              }
              else battery_i = 100;
              battery.setData(battery_i);
-         }
+         }*/
 }
