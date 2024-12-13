@@ -38,7 +38,7 @@ public class CST_procedural_sensorimotor {
     		}
     	}
         String mode = "exploring";
-        int n_tables = 2;
+        int n_tables = 1;
         long seed = 1234;
         OutsideCommunication oc = new OutsideCommunication(50,mode,n_tables,seed);
         oc.start(); 

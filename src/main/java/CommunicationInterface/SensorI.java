@@ -37,7 +37,6 @@ public interface SensorI {
     public void setEpoch(int exp);
     public void setEpoch(int exp, String s);
     public int getEpoch();
-    public int getEpoch(String s);
     public Object getData();
     public void resetData();
     public int getMaxActions();

@@ -52,7 +52,7 @@ public class VisionVrep implements SensorI{
     private final int clientID; 
     private  int time_graph;
     private List<Float> vision_data;   
-    private int stage, num_epoch, num_exp_s, num_exp_c, nact;    
+    private int stage, num_epoch, nact;    
     private final int res = 256;
     private final int max_time_graph=100;
     private static final int MAX_ACTION_NUMBER = 500;
@@ -69,8 +69,7 @@ public class VisionVrep implements SensorI{
         this.vrep = vrep;
         this.stage =3;
        this.num_epoch = 1;
-        this.num_exp_c = num_epoch;
-        this.num_exp_s =num_epoch;
+       
         this.nact = 0;
         this.vision_handles = vision_handles;
         clientID = clientid;
@@ -81,16 +80,14 @@ public class VisionVrep implements SensorI{
         lastLinef = new ArrayList();
         lastLinei = new ArrayList();
         executedActions = new ArrayList();
-        // Float Global_Reward, SurV, SurD, CurV, CurD, Instant_Reward
-        // Int n_tables, exp, exp_c, exp_s, act_n, Battery
+        // Float Global_Reward, _, _, CurV, CurD, Instant_Reward
+        // Int n_tables, exp, _, _, act_n, _
         
         for(int i=0;i<8;i++){
             lastLinef.add(0f);
             lastLinei.add(0);
         }
 
-        lastLinei.set(2, num_exp_c);
-        lastLinei.set(3, num_exp_s);
         lastLinei.set(1, num_epoch);
         next_act = true;
         next_actR = true;
@@ -223,21 +220,16 @@ public class VisionVrep implements SensorI{
 	vrep.simxGetObjectPosition(clientID, vision_handles.getValue(), -1, position,
         vrep.simx_opmode_streaming);
 	boolean m_act;
-        if(lastLinei.get(0)==1)  m_act = lastLinei.get(4)>this.getMaxActions();
-        else m_act = lastLinei.get(6)>this.getMaxActions() && lastLinei.get(7)>this.getMaxActions();
+        m_act = lastLinei.get(4)>this.getMaxActions();
+        
 //	printToFile(position.getArray()[2], "positions.txt");
         //if(debug) System.out.println("Marta on exp "+this.getEpoch()+" with z = "+position.getArray()[2]);        
         if (this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act)) {
             
             if(mlf){
              MLflowLogger.logMetric(runId, "Total_Actions", lastLinei.get(4), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "ActionsC", lastLinei.get(6), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "ActionsS", lastLinei.get(7), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "GlobalRewardS", lastLinef.get(0), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "GlobalRewardC", lastLinef.get(6), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "InstantRewardS", lastLinef.get(5), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "InstantRewardC", lastLinef.get(7), lastLinei.get(1));
-            MLflowLogger.logMetric(runId, "Sur Drive", lastLinef.get(1), lastLinei.get(1));
+            MLflowLogger.logMetric(runId, "GlobalReward", lastLinef.get(0), lastLinei.get(1));
+            MLflowLogger.logMetric(runId, "InstantReward", lastLinef.get(5), lastLinei.get(1));
             MLflowLogger.logMetric(runId, "Cur_Drive", lastLinef.get(3), lastLinei.get(1));
             
             OperatingSystemMXBean osBean =
@@ -275,15 +267,7 @@ public class VisionVrep implements SensorI{
 		}  */
             
             lastLinei.set(1, lastLinei.get(1)+1);
-            lastLinei.set(2, lastLinei.get(2)+1);
-            lastLinei.set(3, lastLinei.get(3)+1);
-            if(lastLinei.get(0)==2 && (lastLinef.get(3)> lastLinef.get(1)||lastLinei.get(3)>this.getMaxEpochs())){
-                
-                mtype = "c";
-            }else if(lastLinei.get(0)==2 && (lastLinef.get(1)> lastLinef.get(3)||lastLinei.get(2)>this.getMaxEpochs())){
-                
-                mtype = "s";
-            }
+            
             lastLinef.set(0,(float) 0);
             lastLinef.set(1,(float) 0);
             lastLinef.set(2,(float) 0);
@@ -304,47 +288,17 @@ public class VisionVrep implements SensorI{
             if (lastLinei.get(0) == 1 && lastLinei.get(1)  > this.getMaxEpochs()) {
                    if(mlf) MLflowLogger.endRun(runId);
                 System.exit(0);
-            } else if (lastLinei.get(0) == 2 && lastLinei.get(2) > this.getMaxEpochs() && lastLinei.get(3)  > this.getMaxEpochs()) {
-
-                if(mlf) MLflowLogger.endRun(runId);
-                System.exit(0);
-            }
+            } 
            
 
             
             return true;
         }
            
-            //if(!aux_a) {
-                //lastLinei.set(4,lastLinei.get(6)+lastLinei.get(7));
-                //System.out.println("actions: "+lastLinei.get(6)+lastLinei.get(7));
-            //    aux_a = false; }
-            //else aux_a = false;
-            if(lastLinei.get(0)==2){
-            if(lastLinef.get(3)> lastLinef.get(1)||lastLinei.get(3)>this.getMaxEpochs()){    
-               // System.out.println("C actions: "+lastLinei.get(6));
-                //lastLinei.set(6, lastLinei.get(6)+1);
-                mtype = "c";
-            }else if(lastLinef.get(1)> lastLinef.get(3)||lastLinei.get(2)>this.getMaxEpochs()){
-               // System.out.println("S actions: "+lastLinei.get(7));
-                //lastLinei.set(7, lastLinei.get(7)+1);
-                
-                mtype = "s";
-            }}
              printToFile("nrewards.txt",false);
              this.setNextAct(true);
             this.setNextActR(true);
-             /*MLflowLogger.logMetric(runId, "Total_Actions", lastLinei.get(4), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "Battery", lastLinei.get(5), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "ActionsC", lastLinei.get(6), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "ActionsS", lastLinei.get(7), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "GlobalRewardS", lastLinef.get(0), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "GlobalRewardC", lastLinef.get(6), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "InstantRewardS", lastLinef.get(5), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "InstantRewardC", lastLinef.get(7), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "Sur Drive", lastLinef.get(1), lastLinei.get(4));
-            MLflowLogger.logMetric(runId, "Cur_Drive", lastLinef.get(3), lastLinei.get(4));
-*/
+           
             return false;
     }
     
@@ -359,10 +313,8 @@ public class VisionVrep implements SensorI{
 	vrep.simxGetObjectPosition(clientID, vision_handles.getValue(), -1, position,
         vrep.simx_opmode_streaming);
 	boolean m_act;
-        if(lastLinei.get(0)==1)  m_act = lastLinei.get(4)>this.getMaxActions();
-        else m_act = lastLinei.get(6)>this.getMaxActions() && lastLinei.get(7)>this.getMaxActions();
-//	printToFile(position.getArray()[2], "positions.txt");
-        //if(debug) System.out.println("Marta on exp "+this.getEpoch()+" with z = "+position.getArray()[2]);
+        m_act = lastLinei.get(4)>this.getMaxActions();
+        
         return this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act);
     }
     
@@ -383,11 +335,7 @@ public class VisionVrep implements SensorI{
         return lastLinei.get(1);
     }
     
-    public int getEpoch(String s) {
-        if(s.equals("C"))  return lastLinei.get(2);    
-        else if(s.equals("S")) return lastLinei.get(3);
-        return 0;
-    }
+   
     
     @Override
     public void setEpoch(int newEpoch) {
@@ -527,45 +475,7 @@ public class VisionVrep implements SensorI{
         return  vision_data;
     }
     
-   /* private void printToFile(Object object){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
-        LocalDateTime now = LocalDateTime.now();  
-        try(FileWriter fw = new FileWriter("profile/vision.txt", true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter out = new PrintWriter(bw)){
-            out.println(dtf.format(now)+""+time_graph+" "+ object);
-            time_graph++;
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-        IntWA resolution = new IntWA(2);            //Array to get resolution of Vision Sensor
-        int ret;                                        //Return of RemoteAPI
-        CharWA image = new CharWA(res*res);              //CharWA that returns GRAYSCALED data of Vision Sensor
-        char temp[];                                //char Array to get GRAYSCALED data of Vision Sensor
-        
-        
-        ret = vrep.simxGetVisionSensorImage(clientID, vision_handles.getValue(), resolution, image, 1, remoteApi.simx_opmode_buffer);
-        temp = image.getArray();
-        if(ret == remoteApi.simx_return_ok  || ret == remoteApi.simx_return_novalue_flag){          
-            byte[] byteMama = new byte[temp.length];
-            for(int bma=0;bma<temp.length;bma++){
-                byteMama[bma]= (byte) temp[bma];
-            }
-            BufferedImage convertedGrayscale = new BufferedImage(res, res, BufferedImage.TYPE_BYTE_GRAY);
-            convertedGrayscale.getRaster().setDataElements(0, 0, res, res, byteMama);
-            String outputimage = "data/"+dtf.format(now)+""+this.num_epoch+""+time_graph+".jpg";
-            try{
-                ImageIO.write(convertedGrayscale, "jpg", new File(outputimage) );
-            }
-            catch(Exception e){
-                String erro = e.toString();
-                System.out.println(erro);
-            }
-        }
-    }
-*/
+
 	@Override
 	public void resetData() {
 		// TODO Auto-generated method stub
@@ -578,61 +488,36 @@ public class VisionVrep implements SensorI{
     }
     
     private void printToFile(String filename, boolean debugp){
-    boolean surB = false;
-        try{
-             if(lastLinei.get(1)==1){
-                 surB = lastLinei.get(1) > this.getMaxEpochs();
-             }else{
-                 
-                 surB = lastLinei.get(2) > this.getMaxEpochs()&&
-                     lastLinei.get(3) > this.getMaxEpochs();
-             }
-         }
-        catch(Exception e){
-        surB = true;
-        }    
-        if(lastLinei.get(5)==100) lastLinef.set(2, (float) 0);
-        else if(lastLinei.get(5)>99) lastLinef.set(2, (float) 0);
-        else if(lastLinei.get(5)==0) lastLinef.set(2, (float) 1);
-        else if(lastLinei.get(5)<0) {
-            lastLinef.set(2, (float) 1);
-            lastLinei.set(5, 0);
-        }
-        if(lastLinef.get(3)> lastLinef.get(1)||lastLinei.get(3)>this.getMaxEpochs()){
-                mtype = "c";
-            }else if(lastLinef.get(1)> lastLinef.get(3)||lastLinei.get(2)>this.getMaxEpochs()){
-                mtype = "s";
-            }
-        if (!surB) {
-            try(FileWriter fw = new FileWriter("profile/"+filename,true);
+    
+        
+        try(FileWriter fw = new FileWriter("profile/"+filename,true);
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw))
             {
                 String s = " QTables:"+lastLinei.get(0)+
-                        " Exp:"+lastLinei.get(1)+" exp_c:"+lastLinei.get(2)+" exp_s:"+lastLinei.get(3)+
+                        " Exp:"+lastLinei.get(1)+
                         " Nact:"+lastLinei.get(4)+ 
-                        " Ri:"+lastLinef.get(5)+" SurV:"+lastLinef.get(1)+" dSurV:"+lastLinef.get(2)+
+                        " Ri:"+lastLinef.get(5)+
                         " CurV:"+lastLinef.get(3)+" dCurV:"+lastLinef.get(4)+
-                        " G_Reward S:"+lastLinef.get(0)+" Ri S:"+lastLinef.get(5)+
-                        " G_Reward C:"+lastLinef.get(6)+" Ri C:"+lastLinef.get(7)+
-                        " LastAct: "+lastAction+
-                        " Act C:"+lastLinei.get(6)+" Act S:"+lastLinei.get(7)+" Type:"+mtype;
+                        " G_Reward:"+lastLinef.get(0)+" Ri:"+lastLinef.get(5)+
+                        " LastAct: "+lastAction;
                 out.println(s);
-                if(debugp) System.out.println(s);
+                
                 s = " QTables:"+lastLinei.get(0)+
-                        " Exp:"+lastLinei.get(1)+" exp_c:"+lastLinei.get(2)+" exp_s:"+lastLinei.get(3)+
+                        " Exp:"+lastLinei.get(1)+
                         " Nact:"+lastLinei.get(4)+ 
-                        " Ri:"+lastLinef.get(5)+" SurV:"+lastLinef.get(1)+" dSurV:"+lastLinef.get(2)+
+                        " Ri:"+lastLinef.get(5)+
                         " CurV:"+lastLinef.get(3)+" dCurV:"+lastLinef.get(4)+
-                        "\n G_Reward S:"+lastLinef.get(0)+" Ri S:"+lastLinef.get(5)+
-                        " G_Reward C:"+lastLinef.get(6)+" Ri C:"+lastLinef.get(7)+
-                        " LastAct: "+lastAction+
-                        " Act C:"+lastLinei.get(6)+" Act S:"+lastLinei.get(7)+" Type:"+mtype;
+                        " G_Reward:"+lastLinef.get(0)+" Ri:"+lastLinef.get(5)+
+                        " LastAct: "+lastAction;
+                
+                if(debugp) System.out.println(s);
+                
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        
       
     }
     
