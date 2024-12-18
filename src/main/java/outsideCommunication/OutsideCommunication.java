@@ -53,8 +53,10 @@ public class OutsideCommunication {
         private String mode;
         Random random;
         long seed;
-  
-	public OutsideCommunication(int max_epochs, String mode, int n_tables,long seed) {
+        String runId;
+        int stage, exp, res, max_time_graph, MAX_ACTION_NUMBER;
+	public OutsideCommunication(int max_epochs, String mode, int n_tables, long seed, int stage, int exp,
+                String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER) {
 		vrep = new remoteApi();
 		vision_orientations = new ArrayList<>();
                 obj_handle = new IntW[nObjs];
@@ -67,6 +69,11 @@ public class OutsideCommunication {
                 this.random = new Random();
                 this.seed = seed;
                 random.setSeed(this.seed);
+                this.stage=stage;
+                this.exp=exp;
+                this.res=res;
+                this.max_time_graph=max_time_graph;
+                this.MAX_ACTION_NUMBER=MAX_ACTION_NUMBER;
 	}
 
 	public void start() {
@@ -127,7 +134,7 @@ public class OutsideCommunication {
 				System.out.println("Connected to sensor ");
 		
 
-		vision = new VisionVrep(vrep, clientID, vision_handles, max_epochs,n_tables);
+		vision = new VisionVrep(vrep, clientID, vision_handles, max_epochs,n_tables,stage, exp, runId, res, max_time_graph, MAX_ACTION_NUMBER);
                 //battery = new VirtualBattery(this, this.mode, random);
                 System.out.println("hdept clientID "+clientID+"vision_handles "+vision_handles.getValue());
                 depth = new DepthVrep(vrep, clientID, vision_handles, vision.getStage(), vision);    

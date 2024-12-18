@@ -87,50 +87,29 @@ public class LearnerCodelet extends Codelet
         this.seed = seed;
         this.oc = outc;
         clientID = clientid;
-        this.num_tables = num_tables;
         this.output = output;
-        this.motivationType = motivationType;
         this.motivation = motivation;
         // allActions: am0: focus; am1: neck left; am2: neck right; am3: head up; am4: head down; 
         // am5: fovea 0; am6: fovea 1; am7: fovea 2; am8: fovea 3; am9: fovea 4; 
         // am10: neck tofocus; am11: head tofocus; am12: neck awayfocus; am13: head awayfocus
         // aa0: focus td color; aa1: focus td depth; aa2: focus td region.
-        allActionsList  = new ArrayList<>(Arrays.asList("am0", "am1", "am2", "am3", "am4", "am5", "am6", "am7", "am8", "am9", "am10", "am11", "am12", "am13", "aa0", "aa1", "aa2", "am14", "am15", "am16")); //
+        allActionsList  = new ArrayList<>(Arrays.asList("am0", "am1", "am2", "am3", "am4", "am5", "am6", "am7", "am8", "am9", "am10", "am11", "am12", "am13", "aa0", "aa1", "aa2")); //
         // States are 0 1 2 ... 5^256-1
      //   ArrayList<String> allStatesList = new ArrayList<>(Arrays.asList(IntStream.rangeClosed(0, (int)Math.pow(2, 16)-1).mapToObj(String::valueOf).toArray(String[]::new)));
-        double[] dcValues = DoubleStream.iterate(0.0, n -> n <= 1.0, n -> n + 0.2).toArray(); // 21 values from 0 to 1.0
-        double[] dsValues = DoubleStream.iterate(0.0, n -> n <= 1.0, n -> n + 0.2).toArray(); // Same as Dc range
         int salMax = (int)Math.pow(2, 16); // Sal has 65536 values (0 to 65535)
-        int batteryMax =11;
         
        int numStates; 
         experiment_number = oc.vision.getEpoch();
         this.stage = this.oc.vision.getStage();
         
         // QLearning initialization
-        if(num_tables==2) {
-            ql = new QLearningSQL("QTable_"+motivationType+".db",allActionsList,this.seed);
-            ql.setFilename("QTable_"+motivationType+".db");
-        }else{
-            ql = new QLearningSQL("Qtable.db",allActionsList,this.seed);
-            ql.setFilename("Qtable.db");
-        }
+         ql = new QLearningSQL("Qtable.db",allActionsList,this.seed);
+        ql.setFilename("Qtable.db");
          ql.setAlpha((double) 0.9);
          //ql.setGamma((double) 0.99);
         ql.setE(0.95);
         
-        if (mode.equals("learning") && this.stage == 3 && oc.vision.getIValues(1) == 1) {
-            if(debug) System.out.println("init Learner");
-            // Initialize QTable to 0 with bulk insertion
-           /* int totalStates;
-            if (num_tables == 1) {
-                totalStates = 65536*21*21*21; // State - Battery - Dc - Ds
-            } else {
-                totalStates = 65536*21*21; // State - Battery - D 
-            }
-            ql.initializeQTableBulk(totalStates, allActionsList );*/
-        
-        } else if (mode.equals("learning") && oc.vision.getIValues(1) > 1 ){
+        if (mode.equals("learning") && oc.vision.getIValues(1) > 1 ){
             
             try {
                     ql.recoverQ();
@@ -228,9 +207,7 @@ if(debug) System.out.println("init learner");
 
             try {
                 int lastState = (int) statesList.get(statesList.size() - 1);
-                float reward = num_tables == 1 ? oc.vision.getFValues(0) 
-                                               : (motivationType.equals("c") ? oc.vision.getFValues(6) 
-                                                                                  : oc.vision.getFValues(0));
+                float reward = oc.vision.getFValues(0) ;
 
                 // Update Q-values and track Q-value changes
                 totalDeltaQ += ql.update(lastState, oc.vision.getLastAction(), reward);

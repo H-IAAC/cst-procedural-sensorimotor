@@ -47,8 +47,8 @@ private MemoryObject neckMotorMO;
 private MemoryObject headMotorMO;
 private List<String> actionsList;
 private List<Integer> allStatesList;
-private List<QLearningSQL> qTableList, qTableSList, qTableCList;
-private List<Double>  rewardList, rewardSList, rewardCList;
+private List<QLearningSQL> qTableList;
+private List<Double>  rewardList;
 private OutsideCommunication oc;
 private final int timeWindow;
 private final int sensorDimension;
@@ -57,7 +57,7 @@ private float vel = 2f,angle_step;
 
 private int curiosity_lv, red_c, green_c, blue_c;
 private int action_index;
-private int experiment_number, exp_s, exp_c;
+private int experiment_number;
 private int stage, action_number=0;
 int fovea; 
 private String mode;
@@ -101,8 +101,7 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
     this.mode = mode;
     MAX_ACTION_NUMBER = oc.vision.getMaxActions();
     MAX_EXPERIMENTS_NUMBER = oc.vision.getMaxEpochs();
-    exp_s = oc.vision.getEpoch();
-        exp_c = oc.vision.getEpoch();
+    
               /*try {
                 Thread.sleep(200);
             } catch (Exception e) {
@@ -126,25 +125,11 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
             motivationMO = (ArrayList<Object>) MC.getI();
         }               
 
-        if(num_tables==2){
-
-            MO = (MemoryObject) this.getInput("SUR_REWARDS");
-            rewardSList = (List) MO.getI();
-            MO = (MemoryObject) this.getInput("QTABLES");
-            qTableSList = (List) MO.getI();
-
-            MO = (MemoryObject) this.getInput("CUR_REWARDS");
-            rewardCList = (List) MO.getI();
-            MO = (MemoryObject) this.getInput("QTABLEC");
-            qTableCList = (List) MO.getI();
-        }
-        else if(num_tables == 1){
-            MO = (MemoryObject) this.getInput("REWARDS");
+    MO = (MemoryObject) this.getInput("REWARDS");
             rewardList = (List) MO.getI();
             MO = (MemoryObject) this.getInput("QTABLE");
             qTableList = (List) MO.getI();
-        }
-        MO = (MemoryObject) this.getOutput("STATES");
+    MO = (MemoryObject) this.getOutput("STATES");
         allStatesList = (List) MO.getI();
 
         MO = (MemoryObject) this.getOutput("ACTIONS");
@@ -187,36 +172,12 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
         
         
        if(debug) System.out.println("  Decision proc"); 
-       boolean curB =  oc.vision.getFValues(3) > oc.vision.getFValues(1);
-        
-        String motivationName;
-        motivationName = "";
-        if(curB){
-            motivationName = "CURIOSITY";
-        }
-        else{
-            motivationName = "SURVIVAL";
-        }
-            
-        if(this.num_tables == 2 && motivationName.equals("SURVIVAL")){
-            if(qTableSList.isEmpty()){
-                return;
-            }
-            ql = qTableSList.get(qTableSList.size()-1);
-
-        }else if(this.num_tables == 2){
-            if(qTableCList.isEmpty()){
-                return;
-            }
-            ql = qTableCList.get(qTableCList.size()-1);
-
-        }else if(this.num_tables == 1){
-            if(qTableList.isEmpty()){
+       if(qTableList.isEmpty()){
                 if(debug) System.out.println("  qtable empty"); 
                 return;
-            }
-            ql = qTableList.get(qTableList.size()-1);
-        }
+       }
+        ql = qTableList.get(qTableList.size()-1);
+        
         
        
         if(ql==null){
@@ -247,36 +208,6 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
         action_number += 1;
         oc.vision.addAction(actionToTake);
         oc.vision.setLastAction(actionToTake);
-        //oc.vision.setIValues(4, (int) oc.vision.getIValues(4)+1);
-       // printToFile(actionToTake,"actions.txt", action_number);
-/*        boolean surB;
-        try{
-        surB = ((double) surI.getValue() > (double) Collections.max((List) curI.getValue())  && exp_s<MAX_EXPERIMENTS_NUMBER) || exp_c>MAX_EXPERIMENTS_NUMBER;
-        }
-        catch(Exception e){
-        surB = true;
-        }
-        boolean exp_b = false;
-        if(num_tables == 1) exp_b = this.experiment_number != this.oc.vision.getEpoch();
-        else if(!surB) exp_b = this.exp_c != this.oc.vision.getEpoch("C");
-        else exp_b = this.exp_s != this.oc.vision.getEpoch("S");
-        
-        if(exp_b){
-            System.out.println("DECISION ----- Exp: "+ experiment_number + 
-                    " ----- N act: "+action_number+" ----- Act: "+actionToTake+
-                    " ----- Type: "+motivationName);
-	
-            if(num_tables == 1) this.experiment_number = this.oc.vision.getEpoch();
-            else if(!surB) this.exp_c = this.oc.vision.getEpoch("C");
-            else this.exp_s = this.oc.vision.getEpoch("S");
-            action_number=0;
-            try {
-            Thread.sleep(20);
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-        }
-  */          
-        //}
     }
 	
 	
@@ -356,32 +287,7 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
             stateVal += (int) Math.pow(2, i)*discreteVal;
         }
         
-        boolean surB = oc.vision.getFValues(1) > oc.vision.getFValues(3);
-        
-       
-        //System.out.println("Rewardcomputer SurB:"+surB);
-        if(!surB){
-            motivationName = "CURIOSITY";
-        }
-        else{
-            motivationName = "SURVIVAL";
-        }
-        double mot_value;
-        int stateIndex = -1;
-        if(motivationName.equals("SURVIVAL"))  mot_value = (double) oc.vision.getFValues(1);
-        else{
-            mot_value = (double) oc.vision.getFValues(3);
-            
-        } 
-        if(num_tables==1){
-        stateIndex = (int) ((oc.vision.getIValues(5) * 6 * 6 * 65536) + (oc.vision.getFValues(3) * 6 * 65536) + (oc.vision.getFValues(1) * 65536) + stateVal);
-            
-        }
-        else if(num_tables==2){
-            stateIndex = (int) (oc.vision.getIValues(5) * 6 * 65536 + mot_value * 65536) + stateVal;
-            
-        }
-        return stateIndex;
+        return stateVal;
     }
 		
 	

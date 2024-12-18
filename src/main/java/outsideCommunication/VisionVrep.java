@@ -53,23 +53,26 @@ public class VisionVrep implements SensorI{
     private  int time_graph;
     private List<Float> vision_data;   
     private int stage, num_epoch, nact;    
-    private final int res = 256;
-    private final int max_time_graph=100;
-    private static final int MAX_ACTION_NUMBER = 500;
+    private int res = 256;
+    private int max_time_graph=100;
+    private int MAX_ACTION_NUMBER = 500;
 	private boolean mlf = false, debug = true, aux_a=false, next_act = true, next_actR = true;
     private int max_epochs;
     private ArrayList<Float> lastLinef;
     private ArrayList<Integer> lastLinei;
     private ArrayList<String> executedActions;
     private String mtype, lastAction;
-    private String runId="866e53327c8c434c8d94a6e1a7691d2e";
-    public VisionVrep(remoteApi vrep, int clientid, IntW vision_handles, int max_epochs, int num_tables) {
+    private String runId="";
+    public VisionVrep(remoteApi vrep, int clientid, IntW vision_handles, int max_epochs, int num_tables, 
+            int stage, int exp, String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER) {
         this.time_graph = 0;
+        if(runId.equals("")) mlf = false;
+        else mlf = true;
         vision_data = Collections.synchronizedList(new ArrayList<>(res*res*3));
         this.vrep = vrep;
-        this.stage =3;
-       this.num_epoch = 1;
-       
+        this.stage =stage;
+       this.num_epoch = exp;
+       if(mlf) this.runId = runId;
         this.nact = 0;
         this.vision_handles = vision_handles;
         clientID = clientid;
@@ -80,6 +83,8 @@ public class VisionVrep implements SensorI{
         lastLinef = new ArrayList();
         lastLinei = new ArrayList();
         executedActions = new ArrayList();
+        this.res = res;
+        this.max_time_graph = max_time_graph;
         // Float Global_Reward, _, _, CurV, CurD, Instant_Reward
         // Int n_tables, exp, _, _, act_n, _
         

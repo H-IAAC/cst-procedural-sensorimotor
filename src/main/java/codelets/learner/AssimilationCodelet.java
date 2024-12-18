@@ -68,7 +68,7 @@ public class AssimilationCodelet extends Codelet
         MO = (MemoryObject) this.getInput("ACTIONS");
         actions = (List) MO.getI();
         if(this.motivation.equals("drives")){
-            DriverArray MC = (DriverArray) this.getInput("MOTIVATION");
+             MemoryContainer MC  = (MemoryContainer) this.getInput("MOTIVATION");
             motivationMO = (ArrayList<Object>) MC.getI();
         }
         proceduralMemoryMO = (MemoryContainer) this.getOutput("PROCEDURAL");
@@ -106,37 +106,17 @@ public class AssimilationCodelet extends Codelet
             int action_n = allActionsList.indexOf(action);
             if(action_n > -1){
             double reward = 0;
-            Idea curI = (Idea) motivationMO.get(0);
-                Idea surI = (Idea) motivationMO.get(1);
+            Idea curI = (Idea) motivationMO.get(motivationMO.size()-1);
                 String nameMotivation;
-                boolean curB;
-try{
-                curB = (double) Collections.max((List) curI.getValue()) > (double) surI.getValue();
-}
-        catch(Exception e){
-        curB = false;
-        }
-
-                if(curB){
-                    nameMotivation = "CURIOSITY";
-                }
-                else{
-                    nameMotivation = "SURVIVAL";
-                }
                 
-            if(this.num_tables == 2){
-                if(nameMotivation.equals("CURIOSITY") && !crewards.isEmpty()) reward = (double) crewards.get(crewards.size() - 1);
-                else if(nameMotivation.equals("SURVIVAL") && !srewards.isEmpty()) reward = (double) srewards.get(srewards.size() - 1);
-            } else if(this.num_tables == 1 && !rewards.isEmpty()){
                 reward = (double) rewards.get(rewards.size() - 1); 
-            }
+            
             double activation;
             ArrayList<Double> activation_a;
-            if(nameMotivation.equals("CURIOSITY")) {
-                activation_a = (ArrayList<Double>) curI.getValue();
+            activation_a = (ArrayList<Double>) curI.getValue();
                 activation  = calculateMean(activation_a);
-            }
-            else activation  = (double) surI.getValue();
+            
+               
             boolean verify_memory = verify_if_memory_exists(state.toString());
                 if(!verify_memory){
                     MemoryObject newProcedure = new MemoryObject();
