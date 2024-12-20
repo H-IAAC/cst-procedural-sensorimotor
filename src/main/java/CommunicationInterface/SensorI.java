@@ -35,7 +35,6 @@ public interface SensorI {
     public float getIValues(int i);
     public void setIValues(int i, int f);     
     public void setEpoch(int exp);
-    public void setEpoch(int exp, String s);
     public int getEpoch();
     public Object getData();
     public void resetData();

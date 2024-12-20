@@ -32,13 +32,13 @@ import outsideCommunication.OutsideCommunication;
  */
 public class AssimilationCodelet extends Codelet 
 {
-    private List states, crewards, srewards, rewards, actions, proceduralList;
+    private List states, actions, proceduralList;
     private MemoryContainer proceduralMemoryMO;
     private OutsideCommunication oc;
     private int stage, nActions, num_tables;
     private String motivation;
     private List<String> allActionsList  = new ArrayList<>(Arrays.asList("am0", "am1", "am2", "am3", "am4", "am5", "am6", "am7", "am8", "am9", "am10", "am11", "am12", "am13", "aa0",  "am14", "am15", "am16")); //"aa1", "aa2",
-    private ArrayList<Object> motivationMO;
+    private Idea motivationMO;
     private boolean debug = false;
     
     public AssimilationCodelet(OutsideCommunication outc, String motivation, int num_tables){
@@ -55,20 +55,12 @@ public class AssimilationCodelet extends Codelet
         MemoryObject MO;
         MO = (MemoryObject) this.getInput("STATES");
         states = (List) MO.getI();
-        if(this.num_tables == 2){
-            MO = (MemoryObject) this.getInput("CUR_REWARDS");
-            crewards = (List) MO.getI();
-            MO = (MemoryObject) this.getInput("SUR_REWARDS");
-            srewards = (List) MO.getI();
-        }else if(this.num_tables == 1){
-            MO = (MemoryObject) this.getInput("REWARDS");
-            rewards = (List) MO.getI();
-        }
+        
         MO = (MemoryObject) this.getInput("ACTIONS");
         actions = (List) MO.getI();
         if(this.motivation.equals("drives")){
              MemoryContainer MC  = (MemoryContainer) this.getInput("MOTIVATION");
-            motivationMO = (ArrayList<Object>) MC.getI();
+            motivationMO = (Idea) MC.getI();
         }
         proceduralMemoryMO = (MemoryContainer) this.getOutput("PROCEDURAL");
         //proceduralList = (List) proceduralMemoryMO.getI();
@@ -105,15 +97,10 @@ public class AssimilationCodelet extends Codelet
             int action_n = allActionsList.indexOf(action);
             if(action_n > -1){
             double reward = 0;
-            Idea curI = (Idea) motivationMO.get(motivationMO.size()-1);
-                String nameMotivation;
-                
-                reward = (double) rewards.get(rewards.size() - 1); 
             
-            double activation;
-            ArrayList<Double> activation_a;
-            activation_a = (ArrayList<Double>) curI.getValue();
-                activation  = calculateMean(activation_a);
+                
+            
+            double activation = (Double) motivationMO.getValue();
             
                
             boolean verify_memory = verify_if_memory_exists(state.toString());

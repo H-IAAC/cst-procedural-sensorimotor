@@ -66,8 +66,7 @@ public class VisionVrep implements SensorI{
     public VisionVrep(remoteApi vrep, int clientid, IntW vision_handles, int max_epochs, int num_tables, 
             int stage, int exp, String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER) {
         this.time_graph = 0;
-        if(runId.equals("")) mlf = false;
-        else mlf = true;
+        
         vision_data = Collections.synchronizedList(new ArrayList<>(res*res*3));
         this.vrep = vrep;
         this.stage =stage;
@@ -229,7 +228,7 @@ public class VisionVrep implements SensorI{
         
 //	printToFile(position.getArray()[2], "positions.txt");
         //if(debug) System.out.println("Marta on exp "+this.getEpoch()+" with z = "+position.getArray()[2]);        
-        if (this.getEpoch() > 1 && (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act)) {
+        if (position.getArray()[2] < 0.35 || position.getArray()[0] > 0.2  || m_act || lastLinei.get(2)==1) {
             
             if(mlf){
              MLflowLogger.logMetric(runId, "Total_Actions", lastLinei.get(4), lastLinei.get(1));
@@ -286,6 +285,7 @@ public class VisionVrep implements SensorI{
             //lastLinei.set(5,100);
             lastLinei.set(6,0);
             lastLinei.set(7,0);
+            lastLinei.set(2,0);
             executedActions.clear();
             this.setNextAct(true);
             this.setNextActR(true);
@@ -314,6 +314,7 @@ public class VisionVrep implements SensorI{
 		} catch (Exception e) {
 			Thread.currentThread().interrupt();
 		}*/
+      //System.out.println("End epoch R");
         FloatWA position = new FloatWA(3);
 	vrep.simxGetObjectPosition(clientID, vision_handles.getValue(), -1, position,
         vrep.simx_opmode_streaming);
@@ -347,10 +348,7 @@ public class VisionVrep implements SensorI{
        this.lastLinei.set(1, newEpoch);    
     }
     
-    public void setEpoch(int newEpoch, String s) {
-       if(s.equals("C")) this.lastLinei.set(2, newEpoch);
-       else if(s.equals("S")) this.lastLinei.set(2, newEpoch);
-    }
+  
     
     @Override
     public int getnAct(){

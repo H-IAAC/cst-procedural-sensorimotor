@@ -45,7 +45,7 @@ public class RewardComputerCodelet extends Codelet
     private QLearningL ql;
     
 
-    private List winnersList, battReadings;
+    private List winnersList;
     private List saliencyMap, curiosityMot, curiosityAct;
     private Idea motivationMO;
     private MemoryObject rewardMO;//, reward_stringMO, action_stringMO;
@@ -137,8 +137,7 @@ public class RewardComputerCodelet extends Codelet
 
 
 
-        MO = (MemoryObject) this.getInput("BATTERY_BUFFER");
-        battReadings = (List) MO.getI();
+     
 
         if(this.motivation.equals("drives")){
             MemoryContainer MC = (MemoryContainer) this.getInput("MOTIVATION");

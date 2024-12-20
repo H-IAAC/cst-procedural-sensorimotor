@@ -83,9 +83,7 @@ private List<String> allStatesList;
         
         MO = (MemoryObject) this.getInput("STATES");
         allStatesList = (List) MO.getI();
-        
-        MO = (MemoryObject) this.getInput("CUR_REWARDS");
-        rewards = (List) MO.getI();
+
 
         motivationMC = (MemoryContainer) this.getOutput("MOTIVATION");
  proceduralMemoryMO = (MemoryContainer) this.getInput("PROCEDURAL");

@@ -31,7 +31,7 @@ import outsideCommunication.OutsideCommunication;
  */
 public class AcommodationCodelet extends Codelet 
 {
-    private List states, srewards, crewards, rewards, actions, proceduralList;
+    private List states,  actions, proceduralList;
     private MemoryContainer proceduralMemoryMO;
     private OutsideCommunication oc;
     private int stage, nActions, num_tables;
@@ -52,15 +52,6 @@ public class AcommodationCodelet extends Codelet
 		MemoryObject MO;
                 MO = (MemoryObject) this.getInput("STATES");
                 states = (List) MO.getI();
-                if(num_tables == 2){
-                    MO = (MemoryObject) this.getInput("CUR_REWARDS");
-                    crewards = (List) MO.getI();
-                    MO = (MemoryObject) this.getInput("SUR_REWARDS");
-                    srewards = (List) MO.getI();
-                } else if(num_tables == 1){
-                    MO = (MemoryObject) this.getInput("REWARDS");
-                    rewards = (List) MO.getI();
-                }
                 MO = (MemoryObject) this.getInput("ACTIONS");
                 actions = (List) MO.getI();
                 if(this.motivation.equals("drives")){
@@ -103,14 +94,9 @@ public class AcommodationCodelet extends Codelet
                 int action_n = allActionsList.indexOf(action);
                 if(action_n>-1){
                 double reward = 0;
-                Idea curI = (Idea) motivationMO;
-                String nameMotivation;
-                reward = (double) rewards.get(rewards.size() - 1); 
                 
-                double activation;
-                ArrayList<Double> activation_a;
                 
-                activation  = (double) curI.getValue();
+                double activation  = (double) motivationMO.getValue();
                 boolean verify_memory = verify_if_memory_exists(state.toString());
                     if(verify_memory){
                         ArrayList<Integer> info = null;

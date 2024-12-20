@@ -85,7 +85,7 @@ public class ActionExecCodelet extends Codelet
     private ArrayList<String> executedActions  = new ArrayList<>();
     private ArrayList<String> allActionsList;
     private ArrayList<Float> lastLine, lastRed, lastGreen, lastBlue, lastDist;
-    private List winnersList, colorReadings, redReadings, greenReadings, blueReadings, distReadings, battReadings;
+    private List winnersList, colorReadings, redReadings, greenReadings, blueReadings, distReadings;
     private List saliencyMap;
     private int aux_resetr=-1,aux_reset=-1, curiosity_lv, red_c, green_c, blue_c, cur_a=0, sur_a=0,num_tables;
     private  String nameMotivation;
@@ -136,9 +136,7 @@ public class ActionExecCodelet extends Codelet
         winnersList = (List) MO.getI();
         MemoryContainer MC = (MemoryContainer) this.getInput("MOTIVATION");
             motivationMO = (Idea) MC.getI();
-        MO = (MemoryObject) this.getInput("BATTERY_BUFFER");
-        battReadings = (List) MO.getI();
-
+       
         MO = (MemoryObject) this.getInput("VISION_COLOR_FM");
         colorReadings = (List) MO.getI();
 /*                MO = (MemoryObject) this.getInput("VISION_GREEN_FM");
@@ -190,25 +188,25 @@ public class ActionExecCodelet extends Codelet
             Thread.currentThread().interrupt();
         }    */   
         
-        if(actionsList.size()<1 || winnersList.size()<1 || battReadings.size()<1){
+        if(actionsList.size()<1 || winnersList.size()<1 ){
             if(debug){
             System.out.println("ACT_EXEC----- actionsList.size():"+actionsList.size());
 
             System.out.println("ACT_EXEC----- winnersList.size():"+winnersList.size());
-            System.out.println("ACT_EXEC----- battReadings.size():"+battReadings.size());
             }
             return;
         }
         String actionToTake = actionsList.get(actionsList.size() - 1);
-        if(sdebug) System.out.println("ACT_EXEC -----  Exp: "+ experiment_number 
-                +" ----- Act: "+ actionToTake+" ----- N_act: "+oc.vision.getExecutedAct()+" Curiosity_lv: "
+         if(sdebug) System.out.println("ACT_EXEC -----  Exp: "+ experiment_number 
+                +" ----- Act: "+ actionToTake+" ----- N_act: "+oc.vision.getIValues(4)+" Curiosity_lv: "
                 +curiosity_lv+" Red: "+red_c+" Green: "+green_c+" Blue: "+blue_c);
         
         Winner lastWinner = (Winner) winnersList.get(winnersList.size() - 1);
         winnerIndex = lastWinner.featureJ;
        
         
-        oc.vision.setIValues(4, (int) (oc.vision.getIValues(4)+1));
+        //oc.vision.setIValues(4, (int) (oc.vision.getIValues(4)+1));
+        
         
         if(!executedActions.contains(actionToTake)) executedActions.add(actionToTake);
             
@@ -405,10 +403,9 @@ public class ActionExecCodelet extends Codelet
         if(this.oc.vision.endEpoch() ){
              crashed = true;
              this.oc.vision.setIValues(4, (int) 0);
-             if(this.oc.vision.getFValues(3)>this.oc.vision.getFValues(1)) this.oc.vision.setIValues(6, (int) (this.oc.vision.getIValues(6)+1));
-             else this.oc.vision.setIValues(7, (int) (this.oc.vision.getIValues(7)+1));
+             
         } else{
-            this.oc.vision.setIValues(4, (int) (this.oc.vision.getIValues(7)+this.oc.vision.getIValues(6)));
+            this.oc.vision.setIValues(4, (int) (this.oc.vision.getIValues(4)+1));
         }
         
 /*        try {

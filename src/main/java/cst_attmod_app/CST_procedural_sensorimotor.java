@@ -37,12 +37,13 @@ public class CST_procedural_sensorimotor {
     			f.delete();
     		}
     	}
-        String mode = "exploring";
+        String mode = "learning";
         int n_tables = 1;
         String runId=""; 
         int stage = 1, exp = 1, res = 256, max_time_graph=100, MAX_ACTION_NUMBER = 500;
         long seed = 1234;
-        OutsideCommunication oc = new OutsideCommunication(50,mode,n_tables,seed, stage,  exp, runId, res, max_time_graph, MAX_ACTION_NUMBER);
+        OutsideCommunication oc = new OutsideCommunication(300,mode,n_tables,seed, stage, 
+                exp, "", res, max_time_graph, MAX_ACTION_NUMBER);
         oc.start(); 
         //  (OutsideCommunication oc, String mode, String motivation, int num_tables, int print_step)
         AgentMind am = new AgentMind(oc, mode, "drives",n_tables, 10,seed); // OC, mode, Num. QTables,  PrintStep

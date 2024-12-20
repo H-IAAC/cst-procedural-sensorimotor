@@ -235,6 +235,7 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
 
         if(action_number > 5 && aux_crash> 5 ){
             crashed = true;
+            oc.vision.setIValues(2, 1);
         }
 
         if (Collections.max(lastLine) > 0){
