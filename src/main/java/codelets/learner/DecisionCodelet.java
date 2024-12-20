@@ -18,7 +18,6 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.learning.QLearning;
 import br.unicamp.cst.representation.idea.Idea;
-import codelets.motivation.DriverArray;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ private static int MAX_ACTION_NUMBER;
 
 private static int MAX_EXPERIMENTS_NUMBER;
 private QLearningSQL ql;
-private ArrayList<Object> motivationMO;
+private Idea motivationMO;
 private MemoryObject motorActionMO, reward_stringMO, action_stringMO;
 private MemoryObject neckMotorMO;
 private MemoryObject headMotorMO;
@@ -121,8 +120,8 @@ public DecisionCodelet (OutsideCommunication outc, int tWindow, int sensDim, Str
         MO = (MemoryObject) this.getInput("SALIENCY_MAP");
         saliencyMap = (List) MO.getI();
         if(this.motivation.equals("drives")){
-             DriverArray MC = (DriverArray) this.getInput("MOTIVATION");
-            motivationMO = (ArrayList<Object>) MC.getI();
+             MemoryContainer MC = (MemoryContainer) this.getInput("MOTIVATION");
+            motivationMO = (Idea) MC.getI();
         }               
 
     MO = (MemoryObject) this.getInput("REWARDS");

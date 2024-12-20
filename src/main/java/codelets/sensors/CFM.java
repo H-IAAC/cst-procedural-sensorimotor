@@ -112,15 +112,7 @@ OutsideCommunication oc;
             winners_row.add(0);
         }
         
-        if(oc.vision.getIValues(5)>50){
-            weight_values.set(0, 0.2f); // Red
-           
-            weight_values.set(2, 1.0f); //Blue
-        }else{
-            weight_values.set(0, 1.0f); // Red
-            
-            weight_values.set(2, 0.2f); // Blue
-        }
+       
         
         for (int j = 0; j < CFMrow.size(); j++) {
             float ctj;

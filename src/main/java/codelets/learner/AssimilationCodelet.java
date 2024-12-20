@@ -10,7 +10,6 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 import static codelets.learner.AcommodationCodelet.calculateMean;
-import codelets.motivation.DriverArray;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

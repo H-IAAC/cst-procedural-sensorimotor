@@ -36,7 +36,7 @@ import outsideCommunication.OutsideCommunication;
 public class CuriosityDrive_MotivationCodelet extends MotivationalCodelet 
 {   private Idea curiosity_motivation_id;
     private List actions, rewards;
-    private ArrayList<Object> motivationMO;
+    private Idea motivationMO;
     private MemoryObject activationMO;
     private OutsideCommunication oc;
     private int stage, nActions;
@@ -44,7 +44,7 @@ public class CuriosityDrive_MotivationCodelet extends MotivationalCodelet
     private double activation;
     private boolean debug = false;
     private int index = -1;
-    private DriverArray motivationMC;
+    private MemoryContainer motivationMC;
     private ArrayList<Double> curiosity_motivation_list;
     private int experiment_number, action_number, exp_c, num_tables;
     private static int MAX_ACTION_NUMBER;
@@ -87,7 +87,7 @@ private List<String> allStatesList;
         MO = (MemoryObject) this.getInput("CUR_REWARDS");
         rewards = (List) MO.getI();
 
-        motivationMC = (DriverArray) this.getOutput("MOTIVATION");
+        motivationMC = (MemoryContainer) this.getOutput("MOTIVATION");
  proceduralMemoryMO = (MemoryContainer) this.getInput("PROCEDURAL");
         
         if(debug) System.out.println("Curiosity MC name: "+this.motivationMC.getName());

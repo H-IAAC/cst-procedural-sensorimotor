@@ -163,7 +163,7 @@ private long seed;
         
         List weights = Collections.synchronizedList(new ArrayList<Float>(7));
         weights.add(1.0f); // Red
-        weights.add(0.5f); // Green
+        weights.add(1.0f); // Green
         weights.add(1.0f); // Blue
         weights.add(1.0f); // Depth
         weights.add(1.0f); // Color Top

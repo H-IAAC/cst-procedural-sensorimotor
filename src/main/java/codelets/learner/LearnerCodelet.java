@@ -14,7 +14,6 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.learning.QLearning;
 import br.unicamp.cst.representation.idea.Idea;
-import codelets.motivation.DriverArray;
 import coppelia.remoteApi;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,7 +45,7 @@ public class LearnerCodelet extends Codelet
 
     private List saliencyMap;
     private List statesList;
-    private ArrayList<Object> motivationMO;
+    private Idea motivationMO;
     private List<String> actionsList;
     private List<QLearningSQL> qTableList;
     private List<Double>  rewardsList;
@@ -153,8 +152,8 @@ if(debug) System.out.println("init learner");
         saliencyMap = (List) MO.getI();
 
         if(this.motivation.equals("drives")){
-            DriverArray MC = (DriverArray) this.getInput("MOTIVATION");
-            motivationMO = (ArrayList<Object>) MC.getI();
+            MemoryContainer MC = (MemoryContainer) this.getInput("MOTIVATION");
+            motivationMO = (Idea) MC.getI();
         }               
 
         if(num_tables==2){ 

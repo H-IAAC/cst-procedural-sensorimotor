@@ -17,7 +17,6 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
-import codelets.motivation.DriverArray;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -47,7 +46,7 @@ public class ActionExecCodelet extends Codelet
     
 
 
-    private ArrayList<Object> motivationMO;
+    private Idea motivationMO;
     private MemoryObject motorActionMO;
     private MemoryObject neckMotorMO;
     private MemoryObject headMotorMO;
@@ -135,8 +134,8 @@ public class ActionExecCodelet extends Codelet
         saliencyMap = (List) MO.getI();
         MO = (MemoryObject) this.getInput("WINNERS");
         winnersList = (List) MO.getI();
-        DriverArray MC = (DriverArray) this.getInput("MOTIVATION");
-            motivationMO = (ArrayList<Object>) MC.getI();
+        MemoryContainer MC = (MemoryContainer) this.getInput("MOTIVATION");
+            motivationMO = (Idea) MC.getI();
         MO = (MemoryObject) this.getInput("BATTERY_BUFFER");
         battReadings = (List) MO.getI();
 
