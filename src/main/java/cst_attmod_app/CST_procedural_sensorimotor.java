@@ -12,7 +12,6 @@
  
 package cst_attmod_app;
 
-import br.unicamp.cst.util.viewer.MindViewer;
 import outsideCommunication.OutsideCommunication;
 
 import java.io.File;
@@ -33,7 +32,7 @@ public class CST_procedural_sensorimotor {
     	// removing previous .txt files expect QTable
     	File folder = new File(".");
     	for (File f : folder.listFiles()) {
-    		if(f.getName().endsWith(".txt") && !(f.getName().endsWith("QTable.txt")) && !(f.getName().endsWith("QTable_CURIOSITY.txt")) && !(f.getName().endsWith("QTable_SURVIVAL.txt"))) {
+    		if(f.getName().endsWith(".txt") && !(f.getName().endsWith("QTable.txt"))) {
     			f.delete();
     		}
     	}

@@ -22,6 +22,11 @@ import outsideCommunication.OutsideCommunication;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+import org.deeplearning4j.rl4j.mdp.EnvConstructive;
+import org.deeplearning4j.rl4j.network.dqn.DQNFactoryStdDenseRBF;
+import org.deeplearning4j.rl4j.space.Box;
+import org.deeplearning4j.rl4j.space.DiscreteSpace;
+import org.deeplearning4j.rl4j.util.DataManager;
 
 /**
  * @author L. L. Rossi (leolellisr)
@@ -30,7 +35,7 @@ import java.util.stream.Stream;
  * Procedural Memory is represented by QTable.
  */
 
-public class LearnerCodelet extends Codelet 
+public class LearnerCodeletNet extends Codelet 
 
 {
 
@@ -72,11 +77,39 @@ public class LearnerCodelet extends Codelet
     private final int CONVERGENCE_EPOCHS = 100;
     private List<Integer> allStatesList = new ArrayList<>();
     private long seed;
+    private QLearningDiscreteDenseRBF<Box> dql;
+    public static int policy_step = 1;
+    public static QLearning.QLConfiguration MARTA_QL =
+                        new QLearning.QLConfiguration(
+                                123,    //Random seed
+                                500,    //Max step By epoch
+                                200, //Max step
+                                10000, //Max size of experience replay
+                                32,     //size of batches
+                                500,    //target update (hard)
+                                10,     //num step noop warmup
+                                0.01,   //reward scaling
+                                0.99,   //gamma
+                                1.0,    //td-error clipping
+                                0.1f,   //min epsilon
+                                1000,   //num step for eps greedy anneal
+                                false    //double DQN
+                        );
+
+    public static DQNFactoryStdDenseRBF.Configuration MARTA_NET =
+                        new DQNFactoryStdDenseRBF.Configuration(
+                                2,         //number of layers
+                                1,        //number of hidden nodes
+                                0.001,     //learning rate
+                                null,       //l2 regularization
+                                null
+                        );
+    
     //private int past_exp;
     //private Idea ideaMotivation;
-    public LearnerCodelet (remoteApi vrep, int clientid, OutsideCommunication outc, int tWindow, 
+    public LearnerCodeletNet (remoteApi vrep, int clientid, OutsideCommunication outc, int tWindow, 
             String mode, String motivation,  String motivationType,  String output, int num_tables, 
-            long seed) {
+            long seed) throws IOException {
         super();
         this.vrep=vrep;
 
@@ -132,6 +165,40 @@ public class LearnerCodelet extends Codelet
             }
         }
 
+        int maxStep = 500;
+                
+                
+                EnvConstructive<Box, Integer, DiscreteSpace> mdp = new EnvConstructive(maxStep, allActionsList.size());
+                DataManager manager = new DataManager(true);
+                
+                
+		// learning mode ---> build DQN from scratch
+		if (mode.equals("learning") && this.stage == 1) {
+			dql = new QLearningDiscreteDenseRBF(mdp, MARTA_NET, MARTA_QL, manager);
+        
+		} else if (mode.equals("learning") && this.stage > 1){
+                    try {
+                        dql = new QLearningDiscreteDenseRBF(mdp, DQNPolicy.load(currentDir+path_model).getNeuralNet(), MARTA_QL,
+                    manager);
+			}
+                    catch (Exception e) {
+                            System.out.println("ERROR "+e+" LOADING PREVIOUS MODEL");
+                            System.exit(1);
+			}
+                }
+                
+		// exploring mode ---> reloads Qtable 
+		else {
+                    try {
+			dql = new QLearningDiscreteDenseRBF(mdp, DQNPolicy.load(currentDir+path_model).getNeuralNet(), MARTA_QL,
+                    manager);
+                    }
+                    catch (Exception e) {
+                        System.out.println("ERROR LOADING PREVIOUS MODEL");
+			System.exit(1);
+                    }
+		}
+                
 if(debug) System.out.println("init learner");
         timeWindow = tWindow;
         this.mode = mode;
