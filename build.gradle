@@ -66,8 +66,9 @@ implementation group: 'org.nd4j', name: 'nd4j-native-platform', version:versionD
 
 // SLF4J
 implementation group: 'org.slf4j', name: 'slf4j-api', version:versionSLF4J
-implementation group: 'org.slf4j', name: 'slf4j-simple', version:versionSLF4J
+implementation 'ch.qos.logback:logback-classic:1.2.11'
 
+implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
 
 }
 

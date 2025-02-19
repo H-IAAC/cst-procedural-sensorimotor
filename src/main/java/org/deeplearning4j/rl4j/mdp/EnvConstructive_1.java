@@ -100,14 +100,12 @@ public class EnvConstructive <OBSERVATION extends Encodable, A, AS extends Actio
         public void setReward(double new_reward){
             reward = new_reward;
         }
+//    public void setFetchable(NeuralNetFetchable<IDQN>  fetchable_i){
+//        fetchable = fetchable_i;
+//    }
 
-    /*public void setFetchable(NeuralNetFetchable<IDQN>  fetchable_i){
-        fetchable = fetchable_i;
-    }
+//    public ObservationSpace<OBSERVATION> getObservationSpace(){
+//        return observationSpace;
+//    }
 
-    @Override
-    public ObservationSpace<OBSERVATION> getObservationSpace(){
-        return observationSpace;
-    }
-*/
 }

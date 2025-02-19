@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
-import br.unicamp.cst.learning.QLearning;
+//import br.unicamp.cst.learning.QLearning;
 import br.unicamp.cst.representation.idea.Idea;
 import coppelia.remoteApi;
 import java.time.LocalDateTime;
@@ -27,6 +27,15 @@ import org.deeplearning4j.rl4j.network.dqn.DQNFactoryStdDenseRBF;
 import org.deeplearning4j.rl4j.space.Box;
 import org.deeplearning4j.rl4j.space.DiscreteSpace;
 import org.deeplearning4j.rl4j.util.DataManager;
+import org.deeplearning4j.rl4j.policy.DQNPolicy;
+import org.deeplearning4j.rl4j.learning.sync.qlearning.discrete.QLearningDiscreteDense;
+import org.deeplearning4j.rl4j.learning.sync.qlearning.QLearning;
+import org.deeplearning4j.rl4j.learning.sync.qlearning.discrete.QLearningDiscreteDenseRBF;
+import org.deeplearning4j.rl4j.network.dqn.DQNFactory;
+import org.deeplearning4j.rl4j.network.dqn.DQNFactoryStdDense;
+import org.deeplearning4j.rl4j.network.dqn.IDQN;
+import org.deeplearning4j.rl4j.observation.Observation;
+
 
 /**
  * @author L. L. Rossi (leolellisr)
@@ -79,6 +88,9 @@ public class LearnerCodeletNet extends Codelet
     private long seed;
     private QLearningDiscreteDenseRBF<Box> dql;
     public static int policy_step = 1;
+    private String currentDir = System.getProperty("user.dir");
+    private String path_model = "/models/pol";
+    
     public static QLearning.QLConfiguration MARTA_QL =
                         new QLearning.QLConfiguration(
                                 123,    //Random seed
@@ -135,11 +147,7 @@ public class LearnerCodeletNet extends Codelet
         this.stage = this.oc.vision.getStage();
         
         // QLearning initialization
-         ql = new QLearningSQL("Qtable.db",allActionsList,this.seed);
-        ql.setFilename("Qtable.db");
-         ql.setAlpha((double) 0.9);
-         //ql.setGamma((double) 0.99);
-        ql.setE(0.95);
+         
         
         if (mode.equals("learning") && oc.vision.getIValues(1) > 1 ){
             
@@ -172,9 +180,10 @@ public class LearnerCodeletNet extends Codelet
                 DataManager manager = new DataManager(true);
                 
                 
+                
 		// learning mode ---> build DQN from scratch
 		if (mode.equals("learning") && this.stage == 1) {
-			dql = new QLearningDiscreteDenseRBF(mdp, MARTA_NET, MARTA_QL, manager);
+			dql = new QLearningDiscreteDenseRBF(mdp, (DQNFactory) MARTA_NET.toNetworkConfiguration(), MARTA_QL, manager);
         
 		} else if (mode.equals("learning") && this.stage > 1){
                     try {
@@ -260,44 +269,37 @@ if(debug) System.out.println("init learner");
     @Override
     public void proc() {
         if (mode.equals("learning") && oc.vision.endEpochR()) {
-            double totalDeltaQ = 0.0;
-            int updatesCount = 0;
+
 
             try {
-                int lastState = (int) statesList.get(statesList.size() - 1);
+                Observation lastState = (Observation) statesList.get(statesList.size() - 1);
                 float reward = oc.vision.getFValues(0) ;
-
+                 dql.setReward(reward);
+                 dql.trainStep(lastState);
                 // Update Q-values and track Q-value changes
-                totalDeltaQ += ql.update(lastState, oc.vision.getLastAction(), reward);
-                updatesCount++;
+                
+                
 
                 ql.storeQ();
             } catch (Exception e) {
                 System.out.println("No state to update: " + e.getMessage());
             }
 
-            // Calculate average Q-value change per update in this epoch
-            double avgDeltaQ = updatesCount > 0 ? totalDeltaQ / updatesCount : 0;
+            
 
-            // Log the average change for monitoring
-            if(debug) System.out.println("Average Q-value change for epoch " + experiment_number + ": " + avgDeltaQ);
-
-            // Early stopping condition
-            if (avgDeltaQ < Q_CHANGE_THRESHOLD && experiment_number > 100) {
-                convergenceCounter++;
-            } else {
-                convergenceCounter = 0; // Reset if significant Q-value changes occur
-            }
-
-            // Stop if Q-values have converged for several consecutive epochs
-            if (convergenceCounter >= CONVERGENCE_EPOCHS) {
-                end_all = true; // Set end flag to true to stop training
-                System.out.println("Convergence reached. Training stopped.");
-            }
+           
 
             if (end_all) {
-                ql.storeQ(); // Final save of Q-table
-                System.exit(0);
+                dql.postEpoch();
+                        dql.incrementEpoch();
+                        
+                        DQNPolicy<Box> pol = dql.getPolicy();
+                        
+                        pol.save(currentDir+path_model);
+                        if (experiment_number > MAX_EXPERIMENTS_NUMBER) {
+                            
+                            System.exit(0);
+                        }
             }
         }
         
