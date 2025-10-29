@@ -7,7 +7,7 @@ plugins {
         id 'java-library'
 }
 
-mainClassName = 'cst_attmod_app.CST_procedural_sensorimotor'
+mainClassName = 'cst_attmod_app.CST_CSR_RL'
 
 repositories {
     flatDir {

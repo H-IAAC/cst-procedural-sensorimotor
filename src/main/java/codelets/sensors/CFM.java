@@ -140,7 +140,7 @@ OutsideCommunication oc;
                 weight_val = (Float) weight_values.get(k);
                 ctj += weight_val*fmkt_val;
                 
-                if(stage==3) {
+                if(stage>2) {
                     if(k>=2) sum_top += weight_val*fmkt_val;
                     else sum_bottom += weight_val*fmkt_val;
                 }   
@@ -155,21 +155,21 @@ OutsideCommunication oc;
         }
         
         
-        /*printToFile((ArrayList<Float>) CFMrow, "CFM.txt");
-        printToFile((ArrayList<Integer>) winners_row, "winnerType.txt");*/
+        printToFile((ArrayList<Float>) CFMrow, "CFM.txt");
+        printToFile((ArrayList<Integer>) winners_row, "winnerType.txt");
     }
     
       
-   /* private void printToFile(Object object,String filename){
-        if(this.sensor.getEpoch() == 1 || this.sensor.getEpoch()%print_step == 0){
+  private void printToFile(Object object,String filename    ){
+        if(oc.vision.getEpoch() %print_step == 0){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
-        //if(time_graph%2 == 0 ){
+        
             try(FileWriter fw = new FileWriter("profile/"+filename,true);
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw))
             {
-                out.println(dtf.format(now)+"_"+this.sensor.getEpoch()+"_"+time_graph+" "+ object);
+                out.println(dtf.format(now)+"_"+(int) oc.vision.getIValues(1)+"_"+(int)oc.vision.getIValues(4) +"_"+time_graph+" "+ object);
                 //if(time_graph == max_time_graph-1) System.out.println(filename+": "+time_graph);          
                 time_graph++;
                 out.close();
@@ -177,5 +177,6 @@ OutsideCommunication oc;
                 e.printStackTrace();
             }
         }
-    }*/
+        
+    }
 }

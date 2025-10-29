@@ -35,7 +35,9 @@ import java.util.List;
 import outsideCommunication.OutsideCommunication;
 import codelets.learner.RewardComputerCodelet;
 import codelets.learner.LearnerCodelet;
+import codelets.learner.LearnerCodeletNet;
 import codelets.learner.QLearningL;
+import codelets.learner.QLearningSQL;
 import codelets.sensors.CFM;
 import codelets.sensors.BU_FM_Color;
 import codelets.sensors.BU_FM_Depth;
@@ -60,16 +62,18 @@ public class AgentMind extends Mind {
     public static final int Sensor_dimension = 256;
     public static final boolean debug = true;
     public static final boolean saverCodelet = false;
-    private int index_hunger, index_curiosity, print_step;
-        private String stringOutputac = "", stringOutputreS = "", stringOutputreC = "";
+    private int index_hunger, index_curiosity, print_step, num_pioneer;
+        private String agent = "", stringOutputac = "", stringOutputreS = "", stringOutputreC = "";
 private long seed;
     public AgentMind(OutsideCommunication oc, String mode, String motivation, 
-            int num_tables, int print_step,long seed) throws IOException{
+            int num_tables, int print_step,long seed, int num_pioneer, String agent) throws IOException{
         super();
+        oc.vision.setIValues(3, print_step);
         oc.vision.setIValues(0, num_tables);
         this.print_step = print_step;
         this.seed = seed;
-        
+        this.num_pioneer = num_pioneer;
+        this.agent=agent;
         //System.out.println("AgentMind");
         //////////////////////////////////////////////
         //Declare Memory Objects
@@ -196,12 +200,15 @@ private long seed;
         //STATES 
         List statesList = Collections.synchronizedList(new ArrayList<String>());
         MemoryObject statesMO = createMemoryObject("STATES", statesList);
-        
-        
-        //QTables
-        List qtableList = Collections.synchronizedList(new ArrayList<QLearningL>());
-        MemoryObject qtableMO = createMemoryObject("QTABLE", qtableList);
-        
+        List qtableList = null;
+        MemoryObject qtableMO = null;
+        if(agent =="qlearning"){
+                qtableList = Collections.synchronizedList(new ArrayList<QLearningSQL>());
+                qtableMO = createMemoryObject("DQN", qtableList);
+        }else{
+                qtableList = Collections.synchronizedList(new ArrayList<QLearningL>());
+                qtableMO = createMemoryObject("DQN", qtableList);
+        }
         
         //REWARDS
         
@@ -272,7 +279,7 @@ private long seed;
         //Feature Maps bottom-up
         //Red FM
         Codelet vision_color_fm_c = new BU_FM_Color(oc.vision, sensbuff_names_vision.size(),
-                sensbuff_names_vision,"VISION_COLOR_FM",Buffersize,Sensor_dimension,print_step);
+                sensbuff_names_vision,"VISION_COLOR_FM",Buffersize,Sensor_dimension,print_step,oc);
         vision_color_fm_c.addInput(vision_bufferMO);
         vision_color_fm_c.addOutput(vision_color_fmMO);
         insertCodelet(vision_color_fm_c);
@@ -359,8 +366,8 @@ private long seed;
             insertCodelet(reward_cod);
             
             
-            Codelet learner_cod = new LearnerCodelet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
-                    "", "QTABLE", num_tables,this.seed );
+            Codelet learner_cod = new LearnerCodeletNet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
+                    "", "DQN", num_tables,this.seed );
             learner_cod.addInput(salMapMO);
             learner_cod.addInput(rewardsMO);
             learner_cod.addInput(actionsMO);
@@ -374,7 +381,7 @@ private long seed;
             
         
         
-        Codelet decision_cod = new DecisionCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables);
+        Codelet decision_cod = new DecisionCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables, num_pioneer);
          decision_cod.addInput(salMapMO);
         if(motivation.equals("drives")) decision_cod.addInput(motivationMC);
         decision_cod.addInput(qtableMO);

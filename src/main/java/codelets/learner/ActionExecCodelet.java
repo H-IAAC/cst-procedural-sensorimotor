@@ -179,32 +179,46 @@ public class ActionExecCodelet extends Codelet
     // Main Codelet function, to be implemented in each subclass.
     @Override
     public void proc() {
+        if(debug) System.out.println("proc actEx");
         crashed = false;
         yawPos = oc.NeckYaw_m.getSpeed();
         headPos = oc.HeadPitch_m.getSpeed(); 
-        //System.out.println("yawPos: "+yawPos+" headPos: "+headPos);
+        oc.vision.setFValues(1, headPos);
+        oc.vision.setFValues(2, yawPos);
+        
+        if(debug) System.out.println("yawPos: "+yawPos+" headPos: "+headPos);
         /*try {
             Thread.sleep(50);
         } catch (Exception e) {
             Thread.currentThread().interrupt();
         }    */   
         
-        if(actionsList.size()<1 || winnersList.size()<1 ){
-            if(debug){
+        if(actionsList.size()<1 ){
+           
             System.out.println("ACT_EXEC----- actionsList.size():"+actionsList.size());
 
-            System.out.println("ACT_EXEC----- winnersList.size():"+winnersList.size());
-            }
             return;
-        }
-        String actionToTake = actionsList.get(actionsList.size() - 1);
-         if(sdebug) System.out.println("ACT_EXEC -----  Exp: "+ experiment_number 
-                +" ----- Act: "+ actionToTake+" ----- N_act: "+oc.vision.getIValues(4)+" Curiosity_lv: "
-                +curiosity_lv+" Red: "+red_c+" Green: "+green_c+" Blue: "+blue_c);
         
-        Winner lastWinner = (Winner) winnersList.get(winnersList.size() - 1);
+        }
+        
+        Winner lastWinner;
+       if( winnersList.size()<1){
+                if(debug) System.out.println("ACT_EXEC----- winnersList.size():"+winnersList.size());
+            lastWinner = new Winner(64,0,0);
+       }else{
+           lastWinner = (Winner) winnersList.get(winnersList.size() - 1);
+       }
+                
+        String actionToTk = actionsList.get(actionsList.size() - 1);
+        int actionToTakeI = Integer.parseInt(actionToTk);
+        String actionToTake = allActionsList.get(actionToTakeI);
+        if(debug) System.out.println("ACT_EXEC -----  Exp: "+ experiment_number 
+                +" ----- Act: "+ actionToTake+" ----- N_act: "+oc.vision.getIValues(4)+" Curiosity_lv: "
+                +curiosity_lv+" yawPos: "+yawPos+" headPos: "+headPos);
+        
+        
         winnerIndex = lastWinner.featureJ;
-       
+       experiment_number = oc.vision.getEpoch();
         
         //oc.vision.setIValues(4, (int) (oc.vision.getIValues(4)+1));
         
@@ -271,7 +285,7 @@ public class ActionExecCodelet extends Codelet
             
             // AM10 - Neck to focus
             // just Stage 3
-             else if (actionToTake.equals("am10") && this.stage == 3) {
+             else if (actionToTake.equals("am10") && this.stage > 2) {
                 if(fovea == 0 || fovea == 2){
                     yawPos = yawPos-angle_step;
                     neckMotorMO.setI(yawPos);
@@ -283,7 +297,7 @@ public class ActionExecCodelet extends Codelet
              }
              
              // AM11 - Head to focus
-             else if (actionToTake.equals("am11") && this.stage == 3) {
+             else if (actionToTake.equals("am11") && this.stage > 2) {
                 if(fovea == 0 || fovea == 2){
                     yawPos = yawPos+angle_step;
                     neckMotorMO.setI(yawPos);
@@ -295,7 +309,7 @@ public class ActionExecCodelet extends Codelet
              }
              
              // AM12 - Neck away focus
-             else if (actionToTake.equals("am12") && this.stage == 3) {
+             else if (actionToTake.equals("am12") && this.stage > 2) {
                 if(fovea == 3 || fovea == 2){
                     headPos = headPos-angle_step;
                     headMotorMO.setI(headPos);
@@ -307,7 +321,7 @@ public class ActionExecCodelet extends Codelet
              }
              
              // AM13 - Head away focus
-             else if (actionToTake.equals("am13") && this.stage == 3) {
+             else if (actionToTake.equals("am13") && this.stage > 2) {
                 if(fovea == 3 || fovea == 2){
                     headPos = headPos+angle_step;
                     headMotorMO.setI(headPos);
@@ -323,7 +337,7 @@ public class ActionExecCodelet extends Codelet
              // attentional actions
 
             // AA0 - Define desired color
-            else if (actionToTake.equals("aa0") && this.stage == 3) {
+            else if (actionToTake.equals("aa0") && this.stage > 2) {
                 List desired_feat_color = (List) desFC.getI();        
                 if(desired_feat_color.size() == timeWindow){
                     desired_feat_color.remove(0);
@@ -348,7 +362,7 @@ public class ActionExecCodelet extends Codelet
             } 
 
             // AA1 - Define desired distance
-            else if (actionToTake.equals("aa1") && this.stage == 3) {
+            else if (actionToTake.equals("aa1") && this.stage > 2) {
                    List desired_feat_dist = (List) desFD.getI();        
                 if(desired_feat_dist.size() == timeWindow){
                     desired_feat_dist.remove(0);
@@ -357,7 +371,7 @@ public class ActionExecCodelet extends Codelet
               }
             
             // AA2 - Define desired region
-            else if (actionToTake.equals("aa2") && this.stage == 3) {
+            else if (actionToTake.equals("aa2") && this.stage > 2) {
                   List desired_feat_reg = (List) desFR.getI();        
                 if(desired_feat_reg.size() == timeWindow){
                     desired_feat_reg.remove(0);
@@ -368,6 +382,8 @@ public class ActionExecCodelet extends Codelet
                 desired_feat_reg_t.add(8);
                 
             }
+            
+            oc.vision.setIValues(2, fovea);
             
             if(aux_reset!=-1){
                 if(aux_reset==0){
@@ -390,11 +406,9 @@ public class ActionExecCodelet extends Codelet
             //printToFile("object_count.txt");
     } 
 
-    
-
-	
-	
-	
+    /**
+     *
+     */
     public void check_stop_experiment() {
 
         /*if(yawPos>1.4f || yawPos<-1.4f || headPos>0.6f || headPos<-0.4f ){
@@ -404,9 +418,12 @@ public class ActionExecCodelet extends Codelet
         if(this.oc.vision.endEpoch() ){
              crashed = true;
              this.oc.vision.setIValues(4, (int) 0);
+             neckMotorMO.setI(0f);
+             headMotorMO.setI(0f);
              
         } else{
             this.oc.vision.setIValues(4, (int) (this.oc.vision.getIValues(4)+1));
+            crashed = false;
         }
         
 /*        try {

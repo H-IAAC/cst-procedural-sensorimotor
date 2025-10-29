@@ -54,9 +54,9 @@ public class OutsideCommunication {
         Random random;
         long seed;
         String runId;
-        int stage, exp, res, max_time_graph, MAX_ACTION_NUMBER;
+        int stage, exp, res, max_time_graph, MAX_ACTION_NUMBER,num_pioneer;
 	public OutsideCommunication(int max_epochs, String mode, int n_tables, long seed, int stage, int exp,
-                String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER) {
+                String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER, int num_pioneer) {
 		vrep = new remoteApi();
 		vision_orientations = new ArrayList<>();
                 obj_handle = new IntW[nObjs];
@@ -74,6 +74,7 @@ public class OutsideCommunication {
                 this.res=res;
                 this.max_time_graph=max_time_graph;
                 this.MAX_ACTION_NUMBER=MAX_ACTION_NUMBER;
+                this.num_pioneer=num_pioneer;
 	}
 
 	public void start() {
@@ -134,7 +135,8 @@ public class OutsideCommunication {
 				System.out.println("Connected to sensor ");
 		
 
-		vision = new VisionVrep(vrep, clientID, vision_handles, max_epochs,n_tables,stage, exp, runId, res, max_time_graph, MAX_ACTION_NUMBER);
+		vision = new VisionVrep(vrep, clientID, vision_handles, max_epochs,n_tables,stage, exp, runId, res,
+                        max_time_graph, MAX_ACTION_NUMBER,num_pioneer);
                 //battery = new VirtualBattery(this, this.mode, random);
                 System.out.println("hdept clientID "+clientID+"vision_handles "+vision_handles.getValue());
                 depth = new DepthVrep(vrep, clientID, vision_handles, vision.getStage(), vision);    
@@ -200,7 +202,9 @@ public class OutsideCommunication {
         
         public void set_object_back(int obj) throws InterruptedException{
             int time = 500;
+            synchronized (RemoteApiLock.COPPELIA_LOCK) {
             vrep.simxSetObjectPosition(clientID, obj_handle[obj].getValue(), -1, allobjsPositions.get(3), vrep.simx_opmode_oneshot);        
+            }
             if (obj == 0 || obj == 2) {
                 time = time*2;
             }
@@ -212,8 +216,10 @@ public class OutsideCommunication {
         }
 
         public void reset_positions(){
+            synchronized (RemoteApiLock.COPPELIA_LOCK) {
             for (int i = 0; i < nObjs; i++) {
                 vrep.simxSetObjectPosition(clientID, obj_handle[i].getValue(), -1, allobjsPositions.get(i), vrep.simx_opmode_oneshot);
+            }
             }
         }
         
