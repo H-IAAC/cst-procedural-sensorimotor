@@ -26,6 +26,7 @@ import codelets.learner.AcommodationCodelet;
 import codelets.learner.ActionExecCodelet;
 import codelets.learner.AssimilationCodelet;
 import codelets.learner.DecisionCodelet;
+import codelets.learner.DecisionCodeletNet;
 import codelets.motor.MotorCodelet;
 import codelets.sensors.Sensor_Vision;
 import codelets.sensors.Sensor_Depth;
@@ -365,32 +366,54 @@ private long seed;
             reward_cod.addOutput(rewardsMO);      
             insertCodelet(reward_cod);
             
-            
-            Codelet learner_cod = new LearnerCodeletNet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
+            if("qlearning".equals(agent)){
+                Codelet learner_cod = new LearnerCodelet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
                     "", "DQN", num_tables,this.seed );
-            learner_cod.addInput(salMapMO);
-            learner_cod.addInput(rewardsMO);
-            learner_cod.addInput(actionsMO);
-            learner_cod.addInput(statesMO);
-            if(motivation.equals("drives")){
-                learner_cod.addInput(motivationMC);
-              }
-            learner_cod.addOutput(qtableMO);
-            insertCodelet(learner_cod);
+                learner_cod.addInput(salMapMO);
+                learner_cod.addInput(rewardsMO);
+                learner_cod.addInput(actionsMO);
+                learner_cod.addInput(statesMO);
+                if(motivation.equals("drives")){
+                    learner_cod.addInput(motivationMC);
+                  }
+                learner_cod.addOutput(qtableMO);
+                insertCodelet(learner_cod);
+            }else{
+                Codelet learner_cod = new LearnerCodeletNet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
+                        "", "DQN", num_tables,this.seed );
+                learner_cod.addInput(salMapMO);
+                learner_cod.addInput(rewardsMO);
+                learner_cod.addInput(actionsMO);
+                learner_cod.addInput(statesMO);
+                if(motivation.equals("drives")){
+                    learner_cod.addInput(motivationMC);
+                  }
+                learner_cod.addOutput(qtableMO);
+                insertCodelet(learner_cod);
+            }
             
-            
         
+        if("qlearning".equals(agent)){
+            Codelet decision_cod = new DecisionCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables);
+             decision_cod.addInput(salMapMO);
+            if(motivation.equals("drives")) decision_cod.addInput(motivationMC);
+            decision_cod.addInput(qtableMO);
+            decision_cod.addInput(rewardsMO);
+            decision_cod.addOutput(actionsMO);
+            decision_cod.addOutput(statesMO);
+            insertCodelet(decision_cod);
+        }else{
+            Codelet decision_cod = new DecisionCodeletNet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables, num_pioneer);
+             decision_cod.addInput(salMapMO);
+            if(motivation.equals("drives")) decision_cod.addInput(motivationMC);
+            decision_cod.addInput(qtableMO);
+            decision_cod.addInput(rewardsMO);
+            decision_cod.addOutput(actionsMO);
+            decision_cod.addOutput(statesMO);
+            insertCodelet(decision_cod);
+        }
         
-        Codelet decision_cod = new DecisionCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables, num_pioneer);
-         decision_cod.addInput(salMapMO);
-        if(motivation.equals("drives")) decision_cod.addInput(motivationMC);
-        decision_cod.addInput(qtableMO);
-        decision_cod.addInput(rewardsMO);
-        decision_cod.addOutput(actionsMO);
-        decision_cod.addOutput(statesMO);
-        insertCodelet(decision_cod);
-        
-        Codelet action_exec_cod = new ActionExecCodelet(oc,  mode, Buffersize, Sensor_dimension, num_tables);
+        Codelet action_exec_cod = new ActionExecCodelet(oc,  mode, Buffersize, Sensor_dimension, num_tables, agent);
          action_exec_cod.addInput(salMapMO);
          action_exec_cod.addInput(winnersMO);
          action_exec_cod.addInput(vision_color_fmMO);

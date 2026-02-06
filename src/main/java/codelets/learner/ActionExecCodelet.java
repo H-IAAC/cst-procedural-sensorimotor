@@ -75,7 +75,7 @@ public class ActionExecCodelet extends Codelet
     private int experiment_number, exp_s, exp_c;
     private int stage, fovea;
     
-    private String mode;
+    private String mode, agent;
 
     
     private float yawPos = 0f, headPos = 0f;   
@@ -89,7 +89,7 @@ public class ActionExecCodelet extends Codelet
     private List saliencyMap;
     private int aux_resetr=-1,aux_reset=-1, curiosity_lv, red_c, green_c, blue_c, cur_a=0, sur_a=0,num_tables;
     private  String nameMotivation;
-    public ActionExecCodelet (OutsideCommunication outc, String mode, int tWindow, int sensDimn, int num_tables) {
+    public ActionExecCodelet (OutsideCommunication outc, String mode, int tWindow, int sensDimn, int num_tables, String agent) {
 
         super();
         time_graph = 0;
@@ -108,7 +108,7 @@ public class ActionExecCodelet extends Codelet
         yawPos = oc.NeckYaw_m.getSpeed();
         headPos = oc.HeadPitch_m.getSpeed();                
         this.stage = this.oc.vision.getStage();
-
+        this.agent = agent;
         this.mode = mode;
 
         timeWindow = tWindow;
@@ -208,10 +208,19 @@ public class ActionExecCodelet extends Codelet
        }else{
            lastWinner = (Winner) winnersList.get(winnersList.size() - 1);
        }
-                
-        String actionToTk = actionsList.get(actionsList.size() - 1);
-        int actionToTakeI = Integer.parseInt(actionToTk);
-        String actionToTake = allActionsList.get(actionToTakeI);
+          String actionToTake = "";
+       if(agent.equals("qlearning")){
+           actionToTake = actionsList.get(actionsList.size() - 1);
+           
+       }else{
+           
+           String actionToTk = actionsList.get(actionsList.size() - 1);
+            int actionToTakeI = Integer.parseInt(actionToTk);
+            actionToTake = allActionsList.get(actionToTakeI);
+
+
+           
+       }
         if(debug) System.out.println("ACT_EXEC -----  Exp: "+ experiment_number 
                 +" ----- Act: "+ actionToTake+" ----- N_act: "+oc.vision.getIValues(4)+" Curiosity_lv: "
                 +curiosity_lv+" yawPos: "+yawPos+" headPos: "+headPos);
