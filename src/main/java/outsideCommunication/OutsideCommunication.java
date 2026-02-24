@@ -77,7 +77,7 @@ public class OutsideCommunication {
                 this.num_pioneer=num_pioneer;
 	}
 
-	public void start() {
+	public void start() throws Exception {
 		// System.out.println("Program started");
 		vrep = new remoteApi();
 		vrep.simxFinish(-1); // just in case, close all opened connections
@@ -139,6 +139,7 @@ public class OutsideCommunication {
                         max_time_graph, MAX_ACTION_NUMBER,num_pioneer);
                 //battery = new VirtualBattery(this, this.mode, random);
                 System.out.println("hdept clientID "+clientID+"vision_handles "+vision_handles.getValue());
+                
                 depth = new DepthVrep(vrep, clientID, vision_handles, vision.getStage(), vision);    
 		try {
 			Thread.sleep(1000);

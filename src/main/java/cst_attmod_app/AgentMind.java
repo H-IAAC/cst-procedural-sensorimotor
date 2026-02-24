@@ -203,7 +203,7 @@ private long seed;
         MemoryObject statesMO = createMemoryObject("STATES", statesList);
         List qtableList = null;
         MemoryObject qtableMO = null;
-        if(agent =="qlearning"){
+        if("qlearning".equals(agent)){
                 qtableList = Collections.synchronizedList(new ArrayList<QLearningSQL>());
                 qtableMO = createMemoryObject("DQN", qtableList);
         }else{

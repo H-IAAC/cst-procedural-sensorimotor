@@ -16,8 +16,6 @@ import outsideCommunication.OutsideCommunication;
 
 import java.io.File;
 import java.io.IOException;
-
-
 /**
  *
  * 
@@ -28,7 +26,7 @@ public class CST_CSR_RL {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, Exception {
     	// removing previous .txt files expect QTable
     	File folder = new File(".");
     	for (File f : folder.listFiles()) {
@@ -36,18 +34,18 @@ public class CST_CSR_RL {
     			f.delete();
     		}
     	}
-        String mode = "exploring";
+        String mode = "learning";
         int n_tables = 1;
         String runId=""; 
         int num_pioneer = 1;
         int stage = 1, exp =1, res = 256, max_time_graph=100, MAX_ACTION_NUMBER = 500;
         long seed = 1234;
-        OutsideCommunication oc = new OutsideCommunication(50,mode,n_tables,seed, stage, 
+        OutsideCommunication oc = new OutsideCommunication(300,mode,n_tables,seed, stage, 
                 exp, "", res, max_time_graph, MAX_ACTION_NUMBER, num_pioneer);
         oc.start(); 
         //  (OutsideCommunication oc, String mode, String motivation, int num_tables, int print_step)
         AgentMind am = new AgentMind(oc, mode, "drives",n_tables, 5,seed, 
-                num_pioneer,"dqn"); // OC, mode, Num_QTables,  PrintStep, seed, num_pioneer, 
+                num_pioneer,"qlearning"); // OC, mode, Num_QTables,  PrintStep, seed, num_pioneer, 
 
     }
     

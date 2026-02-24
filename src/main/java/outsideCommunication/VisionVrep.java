@@ -533,7 +533,8 @@ public class VisionVrep implements SensorI{
                 remoteApi.simx_opmode_buffer
             );
         
-
+           
+        
         if (rc == remoteApi.simx_return_novalue_flag) {
             return vision_data;
         }
