@@ -251,7 +251,7 @@ public class BU_FM_Color extends FeatMapCodelet {
     }
     
      private void printToFile(Object object,String filename    ){
-        if(this.vision.getEpoch() %print_step == 0){
+        if(this.vision.getEpoch() %print_step == 0 && oc.printMaps){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
         

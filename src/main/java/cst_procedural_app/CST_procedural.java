@@ -10,7 +10,7 @@
  *  *     K. Raizer, A. L. O. Paraense, R. R. Gudwin - initial API and implementation
  *  ******************************************************************************/
  
-package cst_attmod_app;
+package cst_procedural_app;
 
 import outsideCommunication.OutsideCommunication;
 
@@ -21,7 +21,7 @@ import java.io.IOException;
  * 
  * @author L. L. Rossi (leolellisr)
  */
-public class CST_CSR_RL {
+public class CST_procedural {
 
     /**
      * @param args the command line arguments
@@ -34,18 +34,22 @@ public class CST_CSR_RL {
     			f.delete();
     		}
     	}
+        Boolean sensorialTest = false;
+        Boolean attentionalTest = true;
+        Boolean printMaps = true;
+        if(sensorialTest || attentionalTest)  printMaps = false;
         String mode = "learning";
         int n_tables = 1;
         String runId=""; 
-        int num_pioneer = 1;
-        int stage = 1, exp =1, res = 256, max_time_graph=100, MAX_ACTION_NUMBER = 500;
+        int num_pioneer = 1, num_episodes = 50;
+        int stage = 3, exp =42, res = 256, max_time_graph=100, MAX_ACTION_NUMBER = 500;
         long seed = 1234;
-        OutsideCommunication oc = new OutsideCommunication(300,mode,n_tables,seed, stage, 
-                exp, "", res, max_time_graph, MAX_ACTION_NUMBER, num_pioneer);
+        OutsideCommunication oc = new OutsideCommunication(num_episodes,mode,n_tables,seed, stage, 
+                exp, "", res, max_time_graph, MAX_ACTION_NUMBER, num_pioneer, printMaps, attentionalTest);
         oc.start(); 
         //  (OutsideCommunication oc, String mode, String motivation, int num_tables, int print_step)
         AgentMind am = new AgentMind(oc, mode, "drives",n_tables, 5,seed, 
-                num_pioneer,"qlearning"); // OC, mode, Num_QTables,  PrintStep, seed, num_pioneer, 
+                num_pioneer,"qlearning",sensorialTest, attentionalTest, printMaps); // OC, mode, Num_QTables,  PrintStep, seed, num_pioneer, 
 
     }
     

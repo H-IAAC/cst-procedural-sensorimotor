@@ -48,8 +48,9 @@ public class TD_FM_Depth extends FeatMapCodelet {
     private MemoryObject desired_feature, desired_featureR;
     //private MemoryObject regionMO;
   private boolean debug = false;
+  private boolean printMaps;
     public TD_FM_Depth(SensorI vision, int nsensors, ArrayList<String> sens_names, String featmapname,
-            int timeWin, int mapDim, int  print_step) {
+            int timeWin, int mapDim, int  print_step, Boolean printMaps) {
         super(nsensors, sens_names, featmapname,timeWin,mapDim);
         this.time_graph = 0;
         this.depth_goal = 10f;
@@ -57,6 +58,7 @@ public class TD_FM_Depth extends FeatMapCodelet {
         this.vision = vision;
         this.stage = this.vision.getStage();
         this.print_step=print_step;
+        this.printMaps = printMaps;
         //this.regionMO = (MemoryObject) this.getOutput("REGION_TOP_FM");
     }
     
@@ -226,7 +228,7 @@ public class TD_FM_Depth extends FeatMapCodelet {
         printToFile(regionTD_t, "region_top_FM.txt");
     }
   private void printToFile(Object object,String filename    ){
-        if(this.vision.getEpoch() %print_step == 0){
+        if(this.vision.getEpoch() %print_step == 0 && printMaps){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
         if(this.vision.getIValues(1)%5 == 0 ){

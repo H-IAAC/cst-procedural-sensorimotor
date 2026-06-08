@@ -161,7 +161,7 @@ OutsideCommunication oc;
     
       
   private void printToFile(Object object,String filename    ){
-        if(oc.vision.getEpoch() %print_step == 0){
+        if(oc.vision.getEpoch() %print_step == 0 && oc.printMaps){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
         

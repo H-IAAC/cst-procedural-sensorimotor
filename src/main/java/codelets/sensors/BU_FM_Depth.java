@@ -38,13 +38,15 @@ private final int res = 256;                     //Resolution of VisionSensor
 private  int time_graph,print_step;
 private final int slices = 16;                    //Slices in each coordinate (x & y) 
 private SensorI vision;
-private boolean debug = false;
+private boolean printMaps, debug = false;
+
     public BU_FM_Depth(SensorI vision, int nsensors, ArrayList<String> sens_names, 
-            String featmapname,int timeWin, int mapDim, int print_step) {
+            String featmapname,int timeWin, int mapDim, int print_step, Boolean printMaps) {
         super(nsensors, sens_names, featmapname,timeWin,mapDim);
         this.time_graph = 0;
         this.vision = vision;
         this.print_step=print_step;
+        this.printMaps = printMaps;
     }
 
     @Override
@@ -142,7 +144,7 @@ private boolean debug = false;
         printToFile(depthFM_t,"depthFM.txt");
     }
    private void printToFile(Object object,String filename    ){
-        if(this.vision.getEpoch() %print_step == 0){
+        if(this.vision.getEpoch() %print_step == 0 && printMaps ){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
       

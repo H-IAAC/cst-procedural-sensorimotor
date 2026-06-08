@@ -51,12 +51,13 @@ public class OutsideCommunication {
         private ArrayList<FloatWA> allobjsPositions;
         private ArrayList<FloatWA> objsOrientations;
         private String mode;
+        public Boolean printMaps, att;
         Random random;
         long seed;
         String runId;
-        int stage, exp, res, max_time_graph, MAX_ACTION_NUMBER,num_pioneer;
+        int resetCounter=0,stage, exp, res, max_time_graph, MAX_ACTION_NUMBER,num_pioneer;
 	public OutsideCommunication(int max_epochs, String mode, int n_tables, long seed, int stage, int exp,
-                String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER, int num_pioneer) {
+                String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER, int num_pioneer, Boolean printMaps, Boolean att) {
 		vrep = new remoteApi();
 		vision_orientations = new ArrayList<>();
                 obj_handle = new IntW[nObjs];
@@ -75,9 +76,11 @@ public class OutsideCommunication {
                 this.max_time_graph=max_time_graph;
                 this.MAX_ACTION_NUMBER=MAX_ACTION_NUMBER;
                 this.num_pioneer=num_pioneer;
+                this.printMaps = printMaps;
+                this.att = att;
 	}
 
-	public void start() throws Exception {
+	public void start() {
 		// System.out.println("Program started");
 		vrep = new remoteApi();
 		vrep.simxFinish(-1); // just in case, close all opened connections
@@ -136,11 +139,12 @@ public class OutsideCommunication {
 		
 
 		vision = new VisionVrep(vrep, clientID, vision_handles, max_epochs,n_tables,stage, exp, runId, res,
-                        max_time_graph, MAX_ACTION_NUMBER,num_pioneer);
+                        max_time_graph, MAX_ACTION_NUMBER,num_pioneer, printMaps, att);
                 //battery = new VirtualBattery(this, this.mode, random);
                 System.out.println("hdept clientID "+clientID+"vision_handles "+vision_handles.getValue());
                 
-                depth = new DepthVrep(vrep, clientID, vision_handles, vision.getStage(), vision);    
+                depth = new DepthVrep(vrep, clientID, vision_handles, vision.getStage(), 
+                        vision, printMaps);    
 		try {
 			Thread.sleep(1000);
 		} catch (Exception e) {
@@ -192,6 +196,11 @@ public class OutsideCommunication {
 			System.out.println("Error on initialing orientation ground truth: ");
 
 		FloatWA angles = new FloatWA(3);
+                
+                vrep.simxSetIntegerSignal(clientID, "posner_run_all_experiments", 1, remoteApi.simx_opmode_blocking);
+                vrep.simxSetIntegerSignal(clientID,"posner_trials_per_experiment", 50, remoteApi.simx_opmode_blocking);
+                vrep.simxSetIntegerSignal(clientID,"posner_reset", resetCounter++, remoteApi.simx_opmode_blocking);
+
 			}
 	
 	public void shuffle_positions(){

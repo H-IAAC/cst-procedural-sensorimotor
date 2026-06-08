@@ -44,9 +44,9 @@ public class SalMap extends Codelet {
     private int sensordimension;
 
     private SensorI vision;
-    
+    private boolean printMaps;
     public SalMap(SensorI vision, String salMapName, String combFMName, 
-            String AttMName, int timeWin, int sensorDim, int print_step){
+            String AttMName, int timeWin, int sensorDim, int print_step, Boolean printMaps){
         this.time_graph = 0;
         saliencyMapName = salMapName;
         combFeatMapName = combFMName;
@@ -55,6 +55,7 @@ public class SalMap extends Codelet {
         sensordimension = sensorDim;
         this.vision = vision;
         this.print_step=print_step;
+        this.printMaps = printMaps;
     }
     
     @Override
@@ -113,7 +114,7 @@ public class SalMap extends Codelet {
     }
     
     private void printToFile(Object object,String filename    ){
-        if(this.vision.getEpoch() %print_step == 0){
+        if(this.vision.getEpoch() %print_step == 0 && printMaps){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
        

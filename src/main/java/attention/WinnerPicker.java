@@ -69,9 +69,10 @@ public class WinnerPicker extends Codelet{
     private static final double TS = 100;
     private static final double TM = 1000;
     private SensorI vision;
-
+    private boolean printMaps;
+    
     public WinnerPicker(SensorI vision, String winListName, String attMapName,
-            String salMName, int tWindow, int sensDim, int print_step){
+            String salMName, int tWindow, int sensDim, int print_step, Boolean printMaps){
         super();
         this.time_graph = 0;
         winnersListName = winListName;
@@ -81,6 +82,7 @@ public class WinnerPicker extends Codelet{
         salMapName = salMName;
         this.vision = vision;
         this.print_step = print_step;
+        this.printMaps = printMaps;
         
     }
 
@@ -252,7 +254,7 @@ public class WinnerPicker extends Codelet{
     }
    
      private void printToFile(Object object,String filename    ){
-        if(this.vision.getEpoch() %print_step == 0){
+        if(this.vision.getEpoch() %print_step == 0 && printMaps){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
         

@@ -19,12 +19,12 @@ public class DepthVrep implements SensorI {
     private final int res = 256, print_step = 1;
     private final int max_time_graph = 100;
     private SensorI vision;
-    private boolean debug = true; 
+    private boolean debug = true, printMaps; 
 
     private boolean streamingInitialized = false; 
     private volatile boolean depthStreamingInitialized = false;
 
-    public DepthVrep(remoteApi vrep, int clientid, IntW vision_handles, int stageVision, SensorI vision) {
+    public DepthVrep(remoteApi vrep, int clientid, IntW vision_handles, int stageVision, SensorI vision, Boolean printMaps) {
         this.time_graph = 0;
         depth_data = Collections.synchronizedList(new ArrayList<>(res * res));
         this.vrep = vrep;
@@ -32,7 +32,7 @@ public class DepthVrep implements SensorI {
         this.vision = vision;
         this.vision_handles = vision_handles;
         this.clientID = clientid;
-
+        this.printMaps = printMaps;
         for (int i = 0; i < res * res; i++) {
             depth_data.add(0f);
         }
@@ -238,4 +238,19 @@ public class DepthVrep implements SensorI {
     public void setCrash(boolean cr) {}
     @Override
     public boolean getCrash() { return false; }
+
+    @Override
+    public String getStringSignal(String signalName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public Double getFloatSignal(String signalName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public Integer getIntegerSignal(String signalName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

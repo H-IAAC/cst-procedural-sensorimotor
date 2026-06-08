@@ -43,8 +43,9 @@ public class TD_FM_Color extends FeatMapCodelet {
     private MemoryObject desired_feature;
     private Float red_goal, green_goal, blue_goal;  
     private Winner lastWinner; 
+    private boolean printMaps;
     public TD_FM_Color(SensorI vision, int nsensors, ArrayList<String> sens_names, 
-            String featmapname,int timeWin, int mapDim, int print_step) {
+            String featmapname,int timeWin, int mapDim, int print_step, Boolean printMaps) {
         super(nsensors, sens_names, featmapname,timeWin,mapDim);
         this.time_graph = 0;
         this.vision = vision;
@@ -53,6 +54,7 @@ public class TD_FM_Color extends FeatMapCodelet {
         this.green_goal = 0f;
         this.blue_goal = 255f;  
         this.print_step=print_step;
+        this.printMaps = printMaps;
     }
 
     public ArrayList<Float> getColorGoal(){
@@ -212,7 +214,7 @@ public class TD_FM_Color extends FeatMapCodelet {
         printToFile(vision_color_FM_t, "top_down_color.txt");
     }
    private void printToFile(Object object,String filename    ){
-        if(this.vision.getEpoch() %print_step == 0){
+        if(this.vision.getEpoch() %print_step == 0 && printMaps){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
       

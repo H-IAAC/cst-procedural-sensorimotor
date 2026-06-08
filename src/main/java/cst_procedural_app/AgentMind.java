@@ -10,9 +10,10 @@
  *  *     K. Raizer, A. L. O. Paraense, R. R. Gudwin - initial API and implementation
  *  ******************************************************************************/
  
-package cst_attmod_app;
+package cst_procedural_app;
 
 
+import attention.PosnerAttentionCodelet;
 import attention.WinnerPicker;
 import attention.SalMap;
 import attention.Winner;
@@ -30,6 +31,7 @@ import codelets.learner.DecisionCodeletNet;
 import codelets.motor.MotorCodelet;
 import codelets.sensors.Sensor_Vision;
 import codelets.sensors.Sensor_Depth;
+import codelets.sensors.RGBSperling;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +52,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import codelets.support.*;
+import java.io.File;
+import org.cst.cogscore.modules.attention.PosnerAttentionTestRunner;
 
 /**
  *
@@ -64,10 +68,12 @@ public class AgentMind extends Mind {
     public static final boolean debug = true;
     public static final boolean saverCodelet = false;
     private int index_hunger, index_curiosity, print_step, num_pioneer;
-        private String agent = "", stringOutputac = "", stringOutputreS = "", stringOutputreC = "";
-private long seed;
+    private String agent = "", stringOutputac = "", stringOutputreS = "", stringOutputreC = "";
+    private long seed;
+    private Boolean attentionalTest,sensorialTest, printMaps;
     public AgentMind(OutsideCommunication oc, String mode, String motivation, 
-            int num_tables, int print_step,long seed, int num_pioneer, String agent) throws IOException{
+            int num_tables, int print_step,long seed, int num_pioneer, 
+            String agent, Boolean sensorialTest, Boolean attentionalTest, Boolean printMaps) throws IOException{
         super();
         oc.vision.setIValues(3, print_step);
         oc.vision.setIValues(0, num_tables);
@@ -75,6 +81,9 @@ private long seed;
         this.seed = seed;
         this.num_pioneer = num_pioneer;
         this.agent=agent;
+        this.sensorialTest = sensorialTest;
+        this.attentionalTest = attentionalTest;
+        this.printMaps = printMaps;
         //System.out.println("AgentMind");
         //////////////////////////////////////////////
         //Declare Memory Objects
@@ -243,12 +252,29 @@ private long seed;
         Codelet motors = new MotorCodelet(oc.HeadPitch_m, oc.NeckYaw_m);
         motors.addInputs(motorMOs);
         insertCodelet(motors);
-        
         //Vision Sensor
         Codelet visions = new Sensor_Vision(oc.vision);
         visions.addOutput(vision_read);
         insertCodelet(visions);
 
+        // Sperling
+        if(sensorialTest){
+            RGBSperling bench = new RGBSperling(
+                    oc.vision,                          // Sensor
+                    256,                                // res
+                    32,                                 // patchSize
+                    new long[]{0, 50, 100, 200, 400},  // delaysMs
+                    20,                   // trialsPerDelay
+                    true,                 // activeInterference
+                    2,                    // interferenceReadsPerTick
+                    500,                  // freshFrameTimeoutMs
+                    new File("benchmark_out"), // outDir
+                    42,                   // seed
+                    null                  // hooks 
+            );
+            bench.addInput(vision_read);
+            insertCodelet(bench);
+        }
         
         //Depth Sensor
         Codelet depths = new Sensor_Depth(oc.depth, oc.vision);
@@ -289,14 +315,14 @@ private long seed;
                 
         //Depth FM
         Codelet depth_fm_c = new BU_FM_Depth(oc.vision, sensbuff_names_vision.size(),
-                sensbuff_names_vision,"DEPTH_FM",Buffersize,Sensor_dimension, print_step);
+                sensbuff_names_vision,"DEPTH_FM",Buffersize,Sensor_dimension, print_step, printMaps);
         depth_fm_c.addInput(depth_bufferMO);
         depth_fm_c.addOutput(depth_fmMO);
         insertCodelet(depth_fm_c);
         
      // TOP DOWN
         Codelet vision_color_top_fm_c = new TD_FM_Color(oc.vision, sensbuff_names_vision.size(), 
-                sensbuff_names_vision, "VISION_COLOR_TOP_FM",Buffersize,Sensor_dimension, print_step);
+                sensbuff_names_vision, "VISION_COLOR_TOP_FM",Buffersize,Sensor_dimension, print_step, printMaps);
         vision_color_top_fm_c.addInput(vision_bufferMO);
         vision_color_top_fm_c.addInput(winnersMO);
         vision_color_top_fm_c.addInput(desFeatCMO);
@@ -307,7 +333,7 @@ private long seed;
       
         //Depth FM
         Codelet depth_top_fm_c = new TD_FM_Depth(oc.vision, sensbuff_names_vision.size(),
-                sensbuff_names_vision,"DEPTH_TOP_FM",Buffersize,Sensor_dimension, print_step);
+                sensbuff_names_vision,"DEPTH_TOP_FM",Buffersize,Sensor_dimension, print_step, printMaps);
         depth_top_fm_c.addInput(winnersMO);
         depth_top_fm_c.addInput(depth_bufferMO);
         depth_top_fm_c.addInput(desFeatDMO);
@@ -339,15 +365,39 @@ private long seed;
         
         //SALIENCY MAP CODELET
         Codelet sal_map_cod = new SalMap(oc.vision, "SALIENCY_MAP", "COMB_FM", "ATTENTIONAL_MAP", Buffersize, 
-                Sensor_dimension, print_step);
+                Sensor_dimension, print_step, printMaps);
         sal_map_cod.addInput(combFMMO);
         sal_map_cod.addInput(attMapMO);
         sal_map_cod.addOutput(salMapMO);
         insertCodelet(sal_map_cod);
         
+        
+        if (attentionalTest) {
+
+        PosnerAttentionTestRunner.Config cfg = new PosnerAttentionTestRunner.Config()
+                .setOutDir(new File("benchmark_out"))
+                .setFilePrefix("attention_posner")
+                .setNeutralEntropyMin(0.98)            // map almost uniform -> neutral
+                .setNeutralVarianceThreshold(1e-6)     // alternative to neutral
+                .setMatchToleranceNormalized(0.15)     // goal-focus tolerance
+                .setDetectionThreshold(null)           // or 0.8 if you want threshold
+                .setUseDetectionFrameAsReference(true);
+
+        PosnerAttentionCodelet bench_att = new PosnerAttentionCodelet(
+                "all",   // experimentId
+                "CONAIM",                 // architectureName
+                cfg,
+                oc.vision
+        );
+        bench_att.addInput(attMapMO);
+        insertCodelet(bench_att);
+        }
+        
+        
+        
         //DECISION MAKING CODELET
         Codelet dec_mak_cod = new WinnerPicker(oc.vision, "WINNERS", "ATTENTIONAL_MAP", "SALIENCY_MAP", 
-                Buffersize, Sensor_dimension, print_step);
+                Buffersize, Sensor_dimension, print_step, printMaps);
         dec_mak_cod.addInput(salMapMO);
         dec_mak_cod.addInput(type_fmMO);
         dec_mak_cod.addOutput(winnersMO);

@@ -50,4 +50,7 @@ public void setnAct(int a);
     public float[] getColor(int i);
     public void setCrash(boolean cr);
     public boolean getCrash();
+    public String getStringSignal(String signalName);
+    public Double getFloatSignal(String signalName);
+    public Integer getIntegerSignal(String signalName);
 }

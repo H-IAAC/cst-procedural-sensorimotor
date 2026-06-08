@@ -11,6 +11,7 @@
  *  ******************************************************************************/
  
 package outsideCommunication;
+import org.modules.sensorial.SperlingTestRunner;
 
 import CommunicationInterface.SensorI;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -39,6 +40,7 @@ import java.time.LocalDateTime;
 
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
+import coppelia.FloatW;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -66,7 +68,7 @@ public class VisionVrep implements SensorI{
     private int res = 256;
     private int max_time_graph=100;
     private int MAX_ACTION_NUMBER = 500;
-	private boolean mlf = false, debug = false, aux_a=false, next_act = true, next_actR = true;
+	private boolean printMaps, mlf = false, debug = false, aux_a=false, next_act = true, next_actR = true;
     private int max_epochs;
     private ArrayList<Float> lastLinef;
     private ArrayList<Integer> lastLinei;
@@ -75,7 +77,7 @@ public class VisionVrep implements SensorI{
     private String mtype, lastAction;
     private String runId="";
     private ArrayList<float[]> colorObjs = new ArrayList<>();
-    private boolean crash;
+    private boolean crash, att;
      private static final long serialVersionUID = 1L;
      private static final String CHECKPOINT_FILE = "vision_checkpoint.dat";
      private static final Object COPPELIA_LOCK = new Object(); // lock global p/ chamadas remotas
@@ -83,9 +85,9 @@ public class VisionVrep implements SensorI{
 
 
     public VisionVrep(remoteApi vrep, int clientid, IntW vision_handles, int max_epochs, int num_tables, 
-            int stage, int exp, String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER, int num_pioneer) {
+            int stage, int exp, String runId, int res, int max_time_graph, int MAX_ACTION_NUMBER, int num_pioneer, Boolean printMaps, Boolean att) {
         this.time_graph = 0;
-        
+        this.att = att;
         vision_data = Collections.synchronizedList(new ArrayList<>(res*res*3));
         this.vrep = vrep;
         this.stage =stage;
@@ -106,7 +108,7 @@ public class VisionVrep implements SensorI{
         this.max_time_graph = max_time_graph;
         // Float Global_Reward, HeadPitch, NeckYaw, CurV, CurD, Instant_Reward, maxSalValue, angleVis
         // Int n_tables, exp, Fovea, printStep, act_n, fieldVie, _, _
-        
+        this.printMaps = printMaps;
         for(int i=0;i<9;i++){
             lastLinef.add(0f);
             lastLinei.add(0);
@@ -416,7 +418,8 @@ public class VisionVrep implements SensorI{
             aux_a = false;
             if (lastLinei.get(0) == 1 && lastLinei.get(1)  > this.getMaxEpochs()) {
                    if(mlf) MLflowLogger.endRun(runId);
-                System.exit(0);
+                if(!att) System.exit(0);
+                lastLinei.set(1,0); 
             } 
            
 
@@ -432,6 +435,84 @@ public class VisionVrep implements SensorI{
     }
     }
     
+    public Integer getIntegerSignal(String signalName) {
+        if (vrep == null || clientID < 0 || signalName == null) {
+            return null;
+        }
+
+        try {
+            IntW signalValue = new IntW(0);
+
+            int ret = vrep.simxGetIntegerSignal(
+                    clientID,
+                    signalName,
+                    signalValue,
+                    remoteApi.simx_opmode_blocking
+            );
+
+            if (ret == remoteApi.simx_return_ok) {
+                return Integer.valueOf(signalValue.getValue());
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Double getFloatSignal(String signalName) {
+        if (vrep == null || clientID < 0 || signalName == null) {
+            return null;
+        }
+
+        try {
+            FloatW signalValue = new FloatW(0.0f);
+
+            int ret = vrep.simxGetFloatSignal(
+                    clientID,
+                    signalName,
+                    signalValue,
+                    remoteApi.simx_opmode_blocking
+            );
+
+            if (ret == remoteApi.simx_return_ok) {
+                return Double.valueOf(signalValue.getValue());
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String getStringSignal(String signalName) {
+        if (vrep == null || clientID < 0 || signalName == null) {
+            return null;
+        }
+
+        try {
+            CharWA signalValue = new CharWA(0);
+
+            int ret = vrep.simxGetStringSignal(
+                    clientID,
+                    signalName,
+                    signalValue,
+                    remoteApi.simx_opmode_blocking
+            );
+
+            if (ret == remoteApi.simx_return_ok) {
+                return signalValue.getString();
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public boolean endEpochR(){
       /*  try {
@@ -604,6 +685,7 @@ public class VisionVrep implements SensorI{
     }
     
     private void printToFile(String filename, boolean debugp){
+        if(printMaps){
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");  
         LocalDateTime now = LocalDateTime.now();
         
@@ -667,7 +749,7 @@ public class VisionVrep implements SensorI{
             }
         if(lastLinei.get(1)%5 == 0) saveImage(vision_data, res, dtf.format(now)+"_"+lastLinei.get(1)+"_"+lastLinei.get(4)+"_rgb.png",
                 dtf.format(now)+"_"+lastLinei.get(1)+"_"+lastLinei.get(4)+"_gsc.png");
-        
+        }
     }
     
     public static void saveImage(List<Float> vision_data, int res, String colorFilename, String grayscaleFilename) {
