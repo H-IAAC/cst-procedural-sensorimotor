@@ -22,6 +22,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
+import br.unicamp.cst.support.CodeletsProfiler;
 import sensory.SensorBufferCodelet;
 import codelets.learner.AcommodationCodelet;
 import codelets.learner.ActionExecCodelet;
@@ -252,10 +253,16 @@ public class AgentMind extends Mind {
         Codelet motors = new MotorCodelet(oc.HeadPitch_m, oc.NeckYaw_m);
         motors.addInputs(motorMOs);
         insertCodelet(motors);
+        motors.setProfiling(true);
+        motors.setCodeletProfiler("profile/", "motors", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         //Vision Sensor
         Codelet visions = new Sensor_Vision(oc.vision);
         visions.addOutput(vision_read);
         insertCodelet(visions);
+        visions.setProfiling(true);
+        visions.setCodeletProfiler("profile/", "visions", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+        
 
         // Sperling
         if(sensorialTest){
@@ -281,6 +288,8 @@ public class AgentMind extends Mind {
         //visions.addInput(stage_fmMO);
         depths.addOutput(depth_read);
         insertCodelet(depths);
+        depths.setProfiling(true);
+        depths.setCodeletProfiler("profile/", "depths", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
         
         //Sensor Buffers
         //Vision data
@@ -288,13 +297,18 @@ public class AgentMind extends Mind {
         vision_buffer.addInput(vision_read);
         vision_buffer.addOutput(vision_bufferMO);
         insertCodelet(vision_buffer);
-
+        vision_buffer.setProfiling(true);
+        vision_buffer.setCodeletProfiler("profile/", "vision_buffer", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+        
         
         //Depth data
         Codelet depth_buffer = new SensorBufferCodelet("DEPTH", "DEPTH_BUFFER", Buffersize);
         depth_buffer.addInput(depth_read);
         depth_buffer.addOutput(depth_bufferMO);
         insertCodelet(depth_buffer);
+        depth_buffer.setProfiling(true);
+        depth_buffer.setCodeletProfiler("profile/", "depth_buffer", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+        
         
         //Buffers list
         ArrayList<String> sensbuff_names_vision = new ArrayList<>();
@@ -310,6 +324,9 @@ public class AgentMind extends Mind {
         vision_color_fm_c.addInput(vision_bufferMO);
         vision_color_fm_c.addOutput(vision_color_fmMO);
         insertCodelet(vision_color_fm_c);
+        vision_color_fm_c.setProfiling(true);
+        vision_color_fm_c.setCodeletProfiler("profile/", "vision_color_fm_c", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
 
 
                 
@@ -319,6 +336,9 @@ public class AgentMind extends Mind {
         depth_fm_c.addInput(depth_bufferMO);
         depth_fm_c.addOutput(depth_fmMO);
         insertCodelet(depth_fm_c);
+        depth_fm_c.setProfiling(true);
+        depth_fm_c.setCodeletProfiler("profile/", "depth_fm_c", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+     
         
      // TOP DOWN
         Codelet vision_color_top_fm_c = new TD_FM_Color(oc.vision, sensbuff_names_vision.size(), 
@@ -328,7 +348,9 @@ public class AgentMind extends Mind {
         vision_color_top_fm_c.addInput(desFeatCMO);
         vision_color_top_fm_c.addOutput(vision_color_top_fmMO);
         insertCodelet(vision_color_top_fm_c);
-        
+        vision_color_top_fm_c.setProfiling(true);
+        vision_color_top_fm_c.setCodeletProfiler("profile/", "vision_color_top_fm_c", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
          
       
         //Depth FM
@@ -341,6 +363,9 @@ public class AgentMind extends Mind {
         depth_top_fm_c.addOutput(depth_top_fmMO);
         depth_top_fm_c.addOutput(vision_region_top_fmMO);
         insertCodelet(depth_top_fm_c);
+        depth_top_fm_c.setProfiling(true);
+        depth_top_fm_c.setCodeletProfiler("profile/", "depth_top_fm_c", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
      
         
         ArrayList<String> FMnames = new ArrayList<>();
@@ -362,6 +387,9 @@ public class AgentMind extends Mind {
         comb_fm_c.addOutput(combFMMO);
         comb_fm_c.addOutput(type_fmMO);
         insertCodelet(comb_fm_c);
+        comb_fm_c.setProfiling(true);
+        comb_fm_c.setCodeletProfiler("profile/", "comb_fm_c", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         
         //SALIENCY MAP CODELET
         Codelet sal_map_cod = new SalMap(oc.vision, "SALIENCY_MAP", "COMB_FM", "ATTENTIONAL_MAP", Buffersize, 
@@ -370,7 +398,9 @@ public class AgentMind extends Mind {
         sal_map_cod.addInput(attMapMO);
         sal_map_cod.addOutput(salMapMO);
         insertCodelet(sal_map_cod);
-        
+        sal_map_cod.setProfiling(true);
+        sal_map_cod.setCodeletProfiler("profile/", "sal_map_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         
         if (attentionalTest) {
 
@@ -403,6 +433,9 @@ public class AgentMind extends Mind {
         dec_mak_cod.addOutput(winnersMO);
         dec_mak_cod.addOutput(attMapMO);
         insertCodelet(dec_mak_cod);
+        dec_mak_cod.setProfiling(true);
+        dec_mak_cod.setCodeletProfiler("profile/", "dec_mak_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         
             //CURIOSITY REWARD CODELET
             Codelet reward_cod = new RewardComputerCodelet(oc, Buffersize, Sensor_dimension, mode, motivation, "", "REWARDS_STRING_OUTPUT", num_tables);
@@ -415,6 +448,9 @@ public class AgentMind extends Mind {
             reward_cod.addInput(actionsMO);
             reward_cod.addOutput(rewardsMO);      
             insertCodelet(reward_cod);
+            reward_cod.setProfiling(true);
+        reward_cod.setCodeletProfiler("profile/", "reward_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
             
             if("qlearning".equals(agent)){
                 Codelet learner_cod = new LearnerCodelet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
@@ -428,6 +464,9 @@ public class AgentMind extends Mind {
                   }
                 learner_cod.addOutput(qtableMO);
                 insertCodelet(learner_cod);
+                learner_cod.setProfiling(true);
+        learner_cod.setCodeletProfiler("profile/", "learner_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
             }else{
                 Codelet learner_cod = new LearnerCodeletNet(oc.vrep, oc.clientID, oc, Buffersize, mode, motivation,
                         "", "DQN", num_tables,this.seed );
@@ -440,7 +479,11 @@ public class AgentMind extends Mind {
                   }
                 learner_cod.addOutput(qtableMO);
                 insertCodelet(learner_cod);
+                learner_cod.setProfiling(true);
+        learner_cod.setCodeletProfiler("profile/", "learner_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
             }
+            
             
         
         if("qlearning".equals(agent)){
@@ -452,6 +495,9 @@ public class AgentMind extends Mind {
             decision_cod.addOutput(actionsMO);
             decision_cod.addOutput(statesMO);
             insertCodelet(decision_cod);
+            decision_cod.setProfiling(true);
+        decision_cod.setCodeletProfiler("profile/", "decision_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         }else{
             Codelet decision_cod = new DecisionCodeletNet(oc, Buffersize, Sensor_dimension, mode, motivation, num_tables, num_pioneer);
              decision_cod.addInput(salMapMO);
@@ -461,6 +507,9 @@ public class AgentMind extends Mind {
             decision_cod.addOutput(actionsMO);
             decision_cod.addOutput(statesMO);
             insertCodelet(decision_cod);
+            decision_cod.setProfiling(true);
+        decision_cod.setCodeletProfiler("profile/", "decision_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         }
         
         Codelet action_exec_cod = new ActionExecCodelet(oc,  mode, Buffersize, Sensor_dimension, num_tables, agent);
@@ -475,6 +524,9 @@ public class AgentMind extends Mind {
          action_exec_cod.addOutput(desFeatDMO);
          action_exec_cod.addOutput(desFeatRMO);
          insertCodelet(action_exec_cod);
+         action_exec_cod.setProfiling(true);
+        action_exec_cod.setCodeletProfiler("profile/", "action_exec_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
          
         // Assimilation
         Codelet assimilation_cod = new AssimilationCodelet(oc, motivation, num_tables);
@@ -486,12 +538,18 @@ public class AgentMind extends Mind {
         }
         assimilation_cod.addOutput(proceduralMO);
         insertCodelet(assimilation_cod);
+        assimilation_cod.setProfiling(true);
+        assimilation_cod.setCodeletProfiler("profile/", "assimilation_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         
         // Acommodation
         Codelet acommodation_cod = new AcommodationCodelet(oc, motivation, num_tables);
         acommodation_cod.addInput(actionsMO);
         acommodation_cod.addInput(statesMO);
         acommodation_cod.addInput(rewardsMO);
+        acommodation_cod.setProfiling(true);
+        acommodation_cod.setCodeletProfiler("profile/", "acommodation_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
         
         if(motivation.equals("drives")){
             acommodation_cod.addInput(motivationMC);
@@ -507,6 +565,9 @@ public class AgentMind extends Mind {
             curiosity_motivation_cod.addInput(proceduralMO);
             curiosity_motivation_cod.addOutput(motivationMC);
             insertCodelet(curiosity_motivation_cod);
+            curiosity_motivation_cod.setProfiling(true);
+            curiosity_motivation_cod.setCodeletProfiler("profile/", "curiosity_motivation_cod", String.valueOf(oc.vision.getEpoch()),null, 10000L, CodeletsProfiler.FileFormat.CSV);
+
 
 
         }

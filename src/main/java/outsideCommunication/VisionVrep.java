@@ -139,6 +139,36 @@ public class VisionVrep implements SensorI{
      restoreCheckpoint();
     }
     
+    private void saveEpochMarker(String event) {
+    File dir = new File("profile");
+    if (!dir.exists()) {
+        dir.mkdirs();
+    }
+
+    File file = new File(dir, "epochs.csv");
+    boolean writeHeader = !file.exists();
+
+    try (FileWriter fw = new FileWriter(file, true);
+         BufferedWriter bw = new BufferedWriter(fw);
+         PrintWriter out = new PrintWriter(bw)) {
+
+        if (writeHeader) {
+            out.println("epoch,nact,time_graph,system_time,event");
+        }
+
+        out.println(
+            lastLinei.get(1) + "," +          // epoch
+            lastLinei.get(4) + "," +          // nact
+            time_graph + "," +                // internal time counter
+            System.currentTimeMillis() + "," +// wall-clock time
+            event
+        );
+
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+    
     // Save state
     private void saveCheckpoint() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CHECKPOINT_FILE))) {
@@ -314,6 +344,9 @@ public class VisionVrep implements SensorI{
             }
         }         
     }
+    
+    
+    
     @Override
     public boolean endEpoch(){
         /*try {
@@ -424,6 +457,7 @@ public class VisionVrep implements SensorI{
            
 
             saveCheckpoint();
+                        saveEpochMarker("epoch_end");
             return true;
         }
            

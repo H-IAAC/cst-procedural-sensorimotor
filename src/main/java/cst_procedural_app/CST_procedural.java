@@ -35,21 +35,26 @@ public class CST_procedural {
     		}
     	}
         Boolean sensorialTest = false;
-        Boolean attentionalTest = true;
+        Boolean attentionalTest = false;
         Boolean printMaps = true;
         if(sensorialTest || attentionalTest)  printMaps = false;
+        
         String mode = "learning";
+        String model = "dqn";
+        int stage = 3, exp =1, res = 256, 
+                max_time_graph=100, MAX_ACTION_NUMBER = 500;
+        long seed = 1234;
+        
         int n_tables = 1;
         String runId=""; 
         int num_pioneer = 1, num_episodes = 50;
-        int stage = 3, exp =42, res = 256, max_time_graph=100, MAX_ACTION_NUMBER = 500;
-        long seed = 1234;
+        
         OutsideCommunication oc = new OutsideCommunication(num_episodes,mode,n_tables,seed, stage, 
                 exp, "", res, max_time_graph, MAX_ACTION_NUMBER, num_pioneer, printMaps, attentionalTest);
         oc.start(); 
         //  (OutsideCommunication oc, String mode, String motivation, int num_tables, int print_step)
         AgentMind am = new AgentMind(oc, mode, "drives",n_tables, 5,seed, 
-                num_pioneer,"qlearning",sensorialTest, attentionalTest, printMaps); // OC, mode, Num_QTables,  PrintStep, seed, num_pioneer, 
+                num_pioneer,model,sensorialTest, attentionalTest, printMaps); // OC, mode, Num_QTables,  PrintStep, seed, num_pioneer, 
 
     }
     
